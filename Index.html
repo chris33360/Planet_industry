@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Jeu de gestion - Carte 20x20 + Énergie</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 20px;
+  }
+  h1 { margin-top: 0; }
+
+  .container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .panel {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 8px;
+    min-width: 260px;
+    box-shadow: 0 0 0 1px #334155;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0;
+  }
+
+  button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 4px;
+  }
+
+  button.selected {
+    background: #16a34a;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(20, 32px);
+    gap: 3px;
+  }
+
+  .cell {
+    width: 32px;
+    height: 32px;
+    background: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 20px;
+    user-select: none;
+  }
+
+  .cell:hover {
+    background: #475569;
+  }
+</style>
+</head>
+<body>
+
+<h1>Carte 20×20 – Industrie & Énergie</h1>
+
+<div class="container">
+
+  <!-- Ressources -->
+  <div class="panel">
+    <h2>Ressources</h2>
+    <div id="resources"></div>
+  </div>
+
+  <!-- Machines -->
+  <div class="panel">
+    <h2>Machines</h2>
+    <div id="machines"></div>
+  </div>
+
+  <!-- Carte -->
+  <div class="panel">
+    <h2>Carte</h2>
+    <div id="grid" class="grid"></div>
+  </div>
+
+</div>
+
+<script>
+/* ============================
+   RESSOURCES
+============================ */
+
+const resources = {
+  wood:      { name: "Bois", emoji: "🪵", amount: 0 },
+  iron:      { name: "Fer", emoji: "🔘", amount: 0 },
+  stone:     { name: "Pierre", emoji: "🪨", amount: 0 },
+  copper:    { name: "Cuivre", emoji: "🟠", amount: 0 },
+  coal:      { name: "Charbon", emoji: "⚫", amount: 0 },
+  oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
+  aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
+  water:     { name: "Eau", emoji: "💧", amount: 0 },
+  uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
+  crystal:   { name: "Cristal", emoji: "🔮", amount: 0 },
+  energy:    { name: "Énergie", emoji: "⚡", amount: 50 }
+};
+
+const passiveEnergyProduction = 2;
+
+/* ============================
+   DÉBITS PAR SECONDE (brut)
+============================ */
+
+const productionRates = {
+  water: 2,
+  oil: 0.5,
+  wood: 2,
+  stone: 1.5,
+  copper: 0.6,
+  aluminum: 0.5,
+  crystal: 0.6,
+  uranium: 0.2,
+  iron: 0.8
+};
+
+/* ============================
+   MACHINES
+============================ */
+
+const machines = [
+  {
+    id: "sawmill",
+    name: "Scierie",
+    produces: "wood",
+    emoji: "🪚",
+    needs: "forest",
+    cost: { wood: 30, iron: 10 },
+    power: 0.8
+  },
+  {
+    id: "extractor_water",
+    name: "Extracteur d'eau",
+    produces: "water",
+    emoji: "💧",
+    needs: "water",
+    cost: { aluminum: 30, iron: 20 },
+    power: 1.2
+  },
+  {
+    id: "extractor_oil",
+    name: "Extracteur de pétrole",
+    produces: "oil",
+    emoji: "🛢️",
+    needs: "oil",
+    cost: { aluminum: 30, iron: 20 },
+    power: 1.2
+  },
+  {
+    id: "drill_iron",
+    name: "Foreuse (Fer)",
+    produces: "iron",
+    emoji: "🔘",
+    needs: "iron",
+    cost: { iron: 30 },
+    power: 1
+  },
+  {
+    id: "drill_stone",
+    name: "Foreuse (Pierre)",
+    produces: "stone",
+    emoji: "🪨",
+    needs: "stone",
+    cost: { iron: 30 },
+    power: 1
+  },
+  {
+    id: "drill_copper",
+    name: "Foreuse (Cuivre)",
+    produces: "copper",
+    emoji: "🟠",
+    needs: "copper",
+    cost: { iron: 30 },
+    power: 1
+  },
+  {
+    id: "drill_aluminum",
+    name: "Foreuse (Aluminium)",
+    produces: "aluminum",
+    emoji: "🧪",
+    needs: "aluminum",
+    cost: { iron: 30 },
+    power: 1
+  },
+  {
+    id: "drill_crystal",
+    name: "Foreuse (Cristal)",
+    produces: "crystal",
+    emoji: "🔮",
+    needs: "crystal",
+    cost: { iron: 30 },
+    power: 1
+  },
+  {
+    id: "drill_uranium",
+    name: "Foreuse (Uranium)",
+    produces: "uranium",
+    emoji: "☢️",
+    needs: "uranium",
+    cost: { iron: 30 },
+    power: 1
+  },
+  {
+    id: "wood_to_coal",
+    name: "Carboniseur",
+    produces: "coal",
+    consumes: { wood: 1 },
+    produceRate: 0.8,
+    emoji: "🔥",
+    needs: "none",
+    cost: { wood: 20, stone: 10 },
+    power: 0.3
+  },
+  {
+    id: "coal_powerplant",
+    name: "Centrale à charbon",
+    produces: "energy",
+    consumes: { coal: 1 },
+    produceRate: 3,
+    emoji: "🏭",
+    needs: "none",
+    cost: { iron: 40, stone: 20 },
+    power: 0
+  }
+];
+
+let selectedMachine = null;
+
+/* ============================
+   GRILLE 20×20 AVEC RESSOURCES
+============================ */
+
+const gridSize = 20;
+
+const resourceEmojis = {
+  none: "",
+  forest: "🌲",
+  iron: "🔘",
+  stone: "🪨",
+  copper: "🟠",
+  aluminum: "🧪",
+  crystal: "🔮",
+  uranium: "☢️",
+  oil: "🛢️",
+  water: "💧"
+};
+
+function randomResource() {
+  const table = [
+    "none","none","none","none",
+    "forest","forest",
+    "iron","stone","copper","aluminum",
+    "crystal","uranium",
+    "oil","water"
+  ];
+  return table[Math.floor(Math.random() * table.length)];
+}
+
+const grid = Array.from({ length: gridSize }, () =>
+  Array.from({ length: gridSize }, () => ({
+    machine: null,
+    natural: randomResource()
+  }))
+);
+
+/* ============================
+   RENDU UI
+============================ */
+
+function renderResources() {
+  const div = document.getElementById("resources");
+  div.innerHTML = "";
+  Object.entries(resources).forEach(([id, res]) => {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `<span>${res.emoji} ${res.name}</span><span>${res.amount.toFixed(1)}</span>`;
+    div.appendChild(row);
+  });
+}
+
+function renderMachines() {
+  const div = document.getElementById("machines");
+  div.innerHTML = "";
+
+  machines.forEach(machine => {
+    const btn = document.createElement("button");
+    btn.textContent = `${machine.emoji} ${machine.name}`;
+
+    btn.onclick = () => {
+      selectedMachine = machine.id;
+      renderMachines();
+    };
+
+    if (selectedMachine === machine.id) btn.classList.add("selected");
+
+    div.appendChild(btn);
+  });
+}
+
+function renderGrid() {
+  const div = document.getElementById("grid");
+  div.innerHTML = "";
+
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+
+      const tile = grid[y][x];
+
+      if (!tile.machine) {
+        cell.textContent = resourceEmojis[tile.natural];
+      } else {
+        const m = machines.find(m => m.id === tile.machine);
+        cell.textContent = m.emoji;
+      }
+
+      cell.onclick = () => placeMachine(x, y);
+
+      cell.oncontextmenu = (e) => {
+        e.preventDefault();
+        removeMachine(x, y);
+      };
+
+      div.appendChild(cell);
+    }
+  }
+}
+
+/* ============================
+   PLACEMENT / SUPPRESSION
+============================ */
+
+function canAfford(cost) {
+  return Object.entries(cost).every(([res, amount]) =>
+    resources[res].amount >= amount
+  );
+}
+
+function payCost(cost) {
+  Object.entries(cost).forEach(([res, amount]) => {
+    resources[res].amount -= amount;
+  });
+}
+
+function placeMachine(x, y) {
+  if (!selectedMachine) return;
+
+  const tile = grid[y][x];
+  if (tile.machine) return;
+
+  const machine = machines.find(m => m.id === selectedMachine);
+
+  if (machine.needs !== "none" && tile.natural !== machine.needs) return;
+
+  if (!canAfford(machine.cost)) return;
+
+  payCost(machine.cost);
+
+  tile.machine = selectedMachine;
+  renderGrid();
+  renderResources();
+}
+
+function removeMachine(x, y) {
+  grid[y][x].machine = null;
+  renderGrid();
+}
+
+/* ============================
+   PRODUCTION + ÉNERGIE
+============================ */
+
+function autoProductionTick() {
+
+  resources.energy.amount += passiveEnergyProduction;
+
+  let totalPowerNeeded = 0;
+
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      const machineId = grid[y][x].machine;
+      if (!machineId) continue;
+
+      const machine = machines.find(m => m.id === machineId);
+      totalPowerNeeded += machine.power;
+    }
+  }
+
+  if (resources.energy.amount < totalPowerNeeded) {
+    renderResources();
+    return;
+  }
+
+  resources.energy.amount -= totalPowerNeeded;
+
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      const machineId = grid[y][x].machine;
+      if (!machineId) continue;
+
+      const machine = machines.find(m => m.id === machineId);
+
+      // Machines de transformation (consomment une ressource pour en produire une autre)
+      if (machine.consumes) {
+        let canRun = true;
+
+        for (const [res, amount] of Object.entries(machine.consumes)) {
+          if (resources[res].amount < amount) {
+            canRun = false;
+            break;
+          }
+        }
+
+        if (!canRun) continue;
+
+        for (const [res, amount] of Object.entries(machine.consumes)) {
+          resources[res].amount -= amount;
+        }
+
+        resources[machine.produces].amount += machine.produceRate;
+      }
+      // Machines d’extraction classiques
+      else {
+        const resId = machine.produces;
+        const rate = productionRates[resId];
+        resources[resId].amount += rate;
+      }
+    }
+  }
+
+  renderResources();
+}
+
+setInterval(autoProductionTick, 1000);
+
+/* ============================
+   INIT
+============================ */
+
+renderResources();
+renderMachines();
+renderGrid();
+
+</script>
+
+</body>
+</html>
