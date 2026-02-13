@@ -89,9 +89,24 @@
   .cell:hover {
     background: #475569;
   }
+  .machine-tooltip {
+  position: absolute;
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  font-size: 14px;
+  pointer-events: none;
+  white-space: pre-line;
+  z-index: 1000;
+  display: none;
+}
+
 </style>
 </head>
 <body>
+<div id="tooltip" class="machine-tooltip"></div>
 
 <div class="header">
   <h1>Industrie & Énergie — V2</h1>
@@ -125,7 +140,7 @@ const resources = {
   iron:      { name: "Fer", emoji: "🔘", amount: 80 },
   stone:     { name: "Pierre", emoji: "🪨", amount: 50 },
   copper:    { name: "Cuivre", emoji: "🟠", amount: 0 },
-  coal:      { name: "Charbon", emoji: "⚫", amount: 0 },
+  coal:      { name: "Charbon", emoji: "⚫", amount: 10 },
   oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
   aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
   water:     { name: "Eau", emoji: "💧", amount: 0 },
@@ -402,6 +417,44 @@ function revealStartingArea() {
 }
 
 revealStartingArea();
+  /* ============================
+  Tooltips
+============================ */
+function getMachineTooltip(machine) {
+  let text = `${machine.emoji} ${machine.name}\n`;
+
+  if (machine.cost) {
+    text += `\nCoût : `;
+    text += Object.entries(machine.cost)
+      .map(([res, amt]) => `${resources[res].emoji}${amt}`)
+      .join(" ");
+  }
+
+  if (machine.power > 0) {
+    text += `\nConsomme ⚡ ${machine.power}/s`;
+  }
+
+  if (machine.produces === "energy") {
+    text += `\nProduit ⚡ ${machine.produceRate || "variable"}/s`;
+  }
+
+  if (machine.consumes) {
+    text += `\nConsomme : `;
+    text += Object.entries(machine.consumes)
+      .map(([res, amt]) => `${resources[res].emoji}${amt}/s`)
+      .join(" ");
+  }
+
+  if (machine.produces && machine.produces !== "energy") {
+    text += `\nProduit : ${resources[machine.produces].emoji}${machine.produceRate || productionRates[machine.produces]}/s`;
+  }
+
+  if (machine.id === "solar_tower") {
+    text += `\nBonus : +1.8⚡ par panneau adjacent`;
+  }
+
+  return text;
+}
 
 /* ============================
    AJOUT : BOIS + FER AU DÉPART
@@ -659,6 +712,24 @@ function renderMachines() {
       .join(" ");
 
     btn.textContent = `${machine.emoji} ${machine.name}${costText ? " (" + costText + ")" : ""}`;
+    btn.onmouseenter = (e) => {
+  const tooltip = document.getElementById("tooltip");
+  tooltip.textContent = getMachineTooltip(machine);
+  tooltip.style.display = "block";
+  tooltip.style.left = (e.pageX + 15) + "px";
+  tooltip.style.top = (e.pageY + 15) + "px";
+};
+
+btn.onmousemove = (e) => {
+  const tooltip = document.getElementById("tooltip");
+  tooltip.style.left = (e.pageX + 15) + "px";
+  tooltip.style.top = (e.pageY + 15) + "px";
+};
+
+btn.onmouseleave = () => {
+  const tooltip = document.getElementById("tooltip");
+  tooltip.style.display = "none";
+};
 
     btn.onclick = () => {
       selectedMachine = machine.id;
