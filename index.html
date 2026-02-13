@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Industrie & Énergie</title>
+<title>Industrie & Énergie — V2</title>
 <style>
   body {
     font-family: system-ui, sans-serif;
@@ -94,7 +94,7 @@
 <body>
 
 <div class="header">
-  <h1>Industrie & Énergie</h1>
+  <h1>Industrie & Énergie — V2</h1>
   <button onclick="restartGame()">🔄 Recommencer</button>
   <button onclick="toggleOrientation()">↕️ Basculer orientation</button>
 </div>
@@ -128,11 +128,11 @@ const resources = {
   coal:      { name: "Charbon", emoji: "⚫", amount: 0 },
   oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
   aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
-  glass: { name: "Verre", emoji: "🧊", amount: 0 },
   water:     { name: "Eau", emoji: "💧", amount: 0 },
   uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
   crystal:   { name: "Cristal", emoji: "💎", amount: 0 },
-  energy:    { name: "Énergie", emoji: "⚡", amount: 100 }
+  glass:     { name: "Verre", emoji: "🧊", amount: 0 },
+  energy:    { name: "Énergie", emoji: "⚡", amount: 0 } // non stockable
 };
 
 /* ============================
@@ -174,14 +174,13 @@ const machines = [
     power: 1.2
   },
   {
-  id: "drill",
-  name: "Foreuse",
-  emoji: "⛏️",
-  needs: ["iron", "stone", "copper", "aluminum", "crystal", "uranium"],
-  cost: { iron: 30 },
-  power: 1.2 // consomme de l'énergie au lieu d'en produire
-},
-
+    id: "drill",
+    name: "Foreuse",
+    emoji: "⛏️",
+    needs: ["iron", "stone", "copper", "aluminum", "crystal", "uranium"],
+    cost: { iron: 30 },
+    power: 1.2
+  },
   {
     id: "wood_to_coal",
     name: "Carboniseur",
@@ -194,37 +193,6 @@ const machines = [
     power: 0.3
   },
   {
-  id: "glassworks",
-  name: "Verrerie",
-  emoji: "🧊",
-  needs: "stone",
-  consumes: { crystal: 0.8 },
-  produces: "glass",
-  produceRate: 1.2,
-  cost: { aluminum: 40, stone: 20 },
-  power: 0.8
-},
-{
-  id: "solar_panel",
-  name: "Panneau solaire",
-  emoji: "🔆",
-  needs: "none",
-  produces: "energy",
-  produceRate: 0.6,
-  cost: { aluminum: 5, glass: 20 },
-  power: 0
-},
-  {
-  id: "solar_tower",
-  name: "Tour solaire",
-  emoji: "🌞",
-  needs: "none",
-  produces: "energy",
-  cost: { aluminum: 100, glass: 20, stone: 20 },
-  power: 0
-},
-
-  {
     id: "coal_powerplant",
     name: "Centrale à charbon",
     produces: "energy",
@@ -233,6 +201,42 @@ const machines = [
     emoji: "🏭",
     needs: "none",
     cost: { iron: 40, stone: 20 },
+    power: 0
+  },
+
+  /* === VERRERIE === */
+  {
+    id: "glassworks",
+    name: "Verrerie",
+    emoji: "🧊",
+    needs: "stone",
+    consumes: { crystal: 0.8 },
+    produces: "glass",
+    produceRate: 1.2,
+    cost: { aluminum: 40, stone: 20 },
+    power: 0.8
+  },
+
+  /* === PANNEAU SOLAIRE === */
+  {
+    id: "solar_panel",
+    name: "Panneau solaire",
+    emoji: "🔆",
+    needs: "none",
+    produces: "energy",
+    produceRate: 0.6,
+    cost: { aluminum: 5, glass: 20 },
+    power: 0
+  },
+
+  /* === TOUR SOLAIRE === */
+  {
+    id: "solar_tower",
+    name: "Tour solaire",
+    emoji: "🌞",
+    needs: "none",
+    produces: "energy",
+    cost: { aluminum: 100, glass: 20, stone: 20 },
     power: 0
   }
 ];
@@ -463,6 +467,59 @@ function isAdjacentToRevealed(x, y) {
 ============================ */
 
 function computeRatePerSecond(resourceId) {
+
+  /* === Calcul du ratio énergétique === */
+
+  let energyProduced = 0;
+  let energyConsumed = 0;
+
+  for (let y = 0; y < gridHeight; y++) {
+    for (let x = 0; x < gridWidth; x++) {
+      const machineId = grid[y][x].machine;
+      if (!machineId) continue;
+
+      const machine = machines.find(m => m.id === machineId);
+
+      if (machine.power > 0) {
+        energyConsumed += machine.power;
+      }
+
+      if (machine.produces === "energy") {
+        if (machine.id === "solar_panel") {
+          energyProduced += 0.6;
+        }
+        else if (machine.id === "coal_powerplant") {
+          if (resources.coal.amount >= 1) {
+            energyProduced += 3;
+          }
+        }
+        else if (machine.id === "solar_tower") {
+          let bonus = 0;
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+              const nx = x + dx;
+              const ny = y + dy;
+              if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
+                if (grid[ny][nx].machine === "solar_panel") {
+                  bonus += 3 * 0.6;
+                }
+              }
+            }
+          }
+          energyProduced += bonus;
+        }
+      }
+    }
+  }
+
+  let energyRatio = 1;
+  if (energyProduced < energyConsumed) {
+    energyRatio = energyProduced / energyConsumed;
+  }
+
+  /* === Calcul du rendement réel === */
+
   let rate = 0;
 
   for (let y = 0; y < gridHeight; y++) {
@@ -472,50 +529,60 @@ function computeRatePerSecond(resourceId) {
 
       const machine = machines.find(m => m.id === machineId);
 
+      /* === Extracteur === */
       if (machine.id === "extractor") {
-        if (grid[y][x].natural === "water") rate += 2;
-        if (grid[y][x].natural === "oil") rate += 0.5;
-      } else if (machine.id === "drill") {
-  const nat = grid[y][x].natural;
-  const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
+        if (resourceId === "water" && grid[y][x].natural === "water") {
+          rate += 2 * energyRatio;
+        }
+        if (resourceId === "oil" && grid[y][x].natural === "oil") {
+          rate += 0.5 * energyRatio;
+        }
+      }
 
-  if (valid.includes(nat) && machine.produces === resourceId) {
-    rate += productionRates[nat];
-  }
-}
+      /* === Foreuse === */
+      else if (machine.id === "drill") {
+        const nat = grid[y][x].natural;
+        const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
+        if (valid.includes(nat) && nat === resourceId) {
+          rate += productionRates[nat] * energyRatio;
+        }
+      }
 
-else if (machine.consumes && machine.produces === resourceId) {
-  let canRun = true;
+      /* === Machines qui consomment === */
+      else if (machine.consumes && machine.produces === resourceId) {
+        let canRun = true;
+        for (const [res, amount] of Object.entries(machine.consumes)) {
+          if (resources[res].amount < amount) {
+            canRun = false;
+            break;
+          }
+        }
+        if (canRun) {
+          rate += machine.produceRate * energyRatio;
+        }
+      }
 
-  for (const [res, amount] of Object.entries(machine.consumes)) {
-    if (resources[res].amount < amount) {
-      canRun = false;
-      break;
-    }
-  }
-
-  if (canRun) {
-    rate += machine.produceRate;
-  }
-}
-      } else if (machine.produces === resourceId) {
-        rate += productionRates[resourceId] || 0;
+         /* === Machines simples === */
+      else if (machine.produces === resourceId && !machine.consumes) {
+        const rateBase = productionRates[machine.produces] || 0;
+        rate += rateBase * energyRatio;
       }
     }
   }
-// Consommations
-for (let y = 0; y < gridHeight; y++) {
-  for (let x = 0; x < gridWidth; x++) {
-    const machineId = grid[y][x].machine;
-    if (!machineId) continue;
 
-    const machine = machines.find(m => m.id === machineId);
+  /* === Consommations visibles === */
+  for (let y = 0; y < gridHeight; y++) {
+    for (let x = 0; x < gridWidth; x++) {
+      const machineId = grid[y][x].machine;
+      if (!machineId) continue;
 
-    if (machine.consumes && machine.consumes[resourceId]) {
-      rate -= machine.consumes[resourceId];
+      const machine = machines.find(m => m.id === machineId);
+
+      if (machine.consumes && machine.consumes[resourceId]) {
+        rate -= machine.consumes[resourceId] * energyRatio;
+      }
     }
   }
-}
 
   return rate;
 }
@@ -523,11 +590,59 @@ for (let y = 0; y < gridHeight; y++) {
 function renderResources() {
   const div = document.getElementById("resources");
   div.innerHTML = "";
+
+  /* Calcul énergie instantanée */
+  let energyProduced = 0;
+  let energyConsumed = 0;
+
+  for (let y = 0; y < gridHeight; y++) {
+    for (let x = 0; x < gridWidth; x++) {
+      const machineId = grid[y][x].machine;
+      if (!machineId) continue;
+
+      const machine = machines.find(m => m.id === machineId);
+
+      if (machine.power > 0) energyConsumed += machine.power;
+
+      if (machine.id === "solar_panel") {
+        energyProduced += 0.6;
+      }
+      else if (machine.id === "coal_powerplant") {
+        if (resources.coal.amount >= 1) energyProduced += 3;
+      }
+      else if (machine.id === "solar_tower") {
+        let bonus = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
+              if (grid[ny][nx].machine === "solar_panel") {
+                bonus += 3 * 0.6;
+              }
+            }
+          }
+        }
+        energyProduced += bonus;
+      }
+    }
+  }
+
+  const netEnergy = energyProduced - energyConsumed;
+
+  /* Affichage des ressources */
   Object.entries(resources).forEach(([id, res]) => {
-    const rate = computeRatePerSecond(id);
     const row = document.createElement("div");
     row.className = "row";
-    row.innerHTML = `<span>${res.emoji} ${res.name} (+${rate.toFixed(1)}/s)</span><span>${res.amount.toFixed(1)}</span>`;
+
+    if (id === "energy") {
+      row.innerHTML = `<span>${res.emoji} ${res.name} (${netEnergy.toFixed(1)}/s)</span><span>${netEnergy.toFixed(1)}</span>`;
+    } else {
+      const rate = computeRatePerSecond(id);
+      row.innerHTML = `<span>${res.emoji} ${res.name} (${rate.toFixed(1)}/s)</span><span>${res.amount.toFixed(1)}</span>`;
+    }
+
     div.appendChild(row);
   });
 }
@@ -585,12 +700,7 @@ function renderGrid() {
 
         if (!t.revealed) {
           if (!isAdjacentToRevealed(x, y)) return;
-          if (resources.energy.amount < 20) return;
-
-          resources.energy.amount -= 20;
           t.revealed = true;
-
-          renderResources();
           renderGrid();
           return;
         }
@@ -659,29 +769,55 @@ function removeMachine(x, y) {
 }
 
 /* ============================
-   PRODUCTION + ÉNERGIE
+   PRODUCTION (ÉNERGIE NON STOCKABLE)
 ============================ */
 
 function autoProductionTick() {
-  let totalPowerNeeded = 0;
 
+  let energyProduced = 0;
+  let energyConsumed = 0;
+
+  /* === Calcul énergie === */
   for (let y = 0; y < gridHeight; y++) {
     for (let x = 0; x < gridWidth; x++) {
       const machineId = grid[y][x].machine;
       if (!machineId) continue;
 
       const machine = machines.find(m => m.id === machineId);
-      totalPowerNeeded += machine.power;
+
+      if (machine.power > 0) energyConsumed += machine.power;
+
+      if (machine.id === "solar_panel") {
+        energyProduced += 0.6;
+      }
+      else if (machine.id === "coal_powerplant") {
+        if (resources.coal.amount >= 1) energyProduced += 3;
+      }
+      else if (machine.id === "solar_tower") {
+        let bonus = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
+              if (grid[ny][nx].machine === "solar_panel") {
+                bonus += 3 * 0.6;
+              }
+            }
+          }
+        }
+        energyProduced += bonus;
+      }
     }
   }
 
-  if (resources.energy.amount < totalPowerNeeded) {
-    renderResources();
-    return;
+  let energyRatio = 1;
+  if (energyProduced < energyConsumed) {
+    energyRatio = energyProduced / energyConsumed;
   }
 
-  resources.energy.amount -= totalPowerNeeded;
-
+  /* === Production des ressources === */
   for (let y = 0; y < gridHeight; y++) {
     for (let x = 0; x < gridWidth; x++) {
       const machineId = grid[y][x].machine;
@@ -689,25 +825,22 @@ function autoProductionTick() {
 
       const machine = machines.find(m => m.id === machineId);
 
-      // Extracteur
+      /* === Extracteur === */
       if (machine.id === "extractor") {
-        if (grid[y][x].natural === "water") resources.water.amount += 2;
-        if (grid[y][x].natural === "oil") resources.oil.amount += 0.5;
+        if (grid[y][x].natural === "water") resources.water.amount += 2 * energyRatio;
+        if (grid[y][x].natural === "oil") resources.oil.amount += 0.5 * energyRatio;
       }
 
-      // Foreuse (corrigée)
+      /* === Foreuse === */
       else if (machine.id === "drill") {
         const nat = grid[y][x].natural;
-      
         const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
-      
         if (valid.includes(nat)) {
-          resources[nat].amount += productionRates[nat];
+          resources[nat].amount += productionRates[nat] * energyRatio;
         }
       }
 
-
-      // Machines qui consomment (carboniseur, centrale)
+      /* === Machines qui consomment === */
       else if (machine.consumes) {
         let canRun = true;
 
@@ -721,38 +854,16 @@ function autoProductionTick() {
         if (!canRun) continue;
 
         for (const [res, amount] of Object.entries(machine.consumes)) {
-          resources[res].amount -= amount;
+          resources[res].amount -= amount * energyRatio;
         }
 
-        resources[machine.produces].amount += machine.produceRate;
+        resources[machine.produces].amount += machine.produceRate * energyRatio;
       }
-// Tour solaire : produit 3x la production d'un panneau solaire adjacent
-else if (machine.id === "solar_tower") {
-  let bonus = 0;
 
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      if (dx === 0 && dy === 0) continue;
-
-      const nx = x + dx;
-      const ny = y + dy;
-
-      if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
-        const neighbor = grid[ny][nx].machine;
-        if (neighbor === "solar_panel") {
-          bonus += 3 * 0.6; // 3 × production du panneau solaire
-        }
-      }
-    }
-  }
-
-  resources.energy.amount += bonus;
-}
-
-      // Machines simples (scierie)
+      /* === Machines simples === */
       else if (machine.produces) {
         const rate = productionRates[machine.produces] || 0;
-        resources[machine.produces].amount += rate;
+        resources[machine.produces].amount += rate * energyRatio;
       }
     }
   }
@@ -760,6 +871,7 @@ else if (machine.id === "solar_tower") {
   renderResources();
 }
 
+/* Tick */
 setInterval(autoProductionTick, 1000);
 
 /* ============================
@@ -767,17 +879,10 @@ setInterval(autoProductionTick, 1000);
 ============================ */
 
 function restartGame() {
+  Object.keys(resources).forEach(r => resources[r].amount = 0);
   resources.wood.amount = 100;
   resources.iron.amount = 80;
   resources.stone.amount = 50;
-  resources.copper.amount = 0;
-  resources.coal.amount = 0;
-  resources.oil.amount = 0;
-  resources.aluminum.amount = 0;
-  resources.water.amount = 0;
-  resources.uranium.amount = 0;
-  resources.crystal.amount = 0;
-  resources.energy.amount = 100;
 
   grid = generateNaturalMap().map(row =>
     row.map(natural => ({
@@ -831,6 +936,7 @@ function toggleOrientation() {
 renderResources();
 renderMachines();
 renderGrid();
+
 </script>
 
 </body>
