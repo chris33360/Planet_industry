@@ -564,31 +564,34 @@ function payCost(cost) {
 }
 
 function placeMachine(x, y) {
+  if (!selectedMachine) return;
+
   const tile = grid[y][x];
+  if (tile.machine) return;
+
   const machine = machines.find(m => m.id === selectedMachine);
 
-  console.log("CLICK", { x, y, selectedMachine, tile, machine });
-
-  if (!selectedMachine) {
-    console.log("→ Aucune machine sélectionnée");
-    return;
-  }
-
-  if (tile.machine) {
-    console.log("→ Case déjà occupée");
-    return;
-  }
-
-  // Test besoins
+  // Vérification du type de case
   if (Array.isArray(machine.needs)) {
-    if (!machine.needs.includes(tile.natural)) {
-      console.log("→ Besoin non satisfait", { needs: machine.needs, natural: tile.natural });
-      return;
-    }
+    if (!machine.needs.includes(tile.natural)) return;
   } else if (machine.needs !== "none" && tile.natural !== machine.needs) {
-    console.log("→ Besoin simple non satisfait", { need: machine.needs, natural: tile.natural });
     return;
   }
+
+  // Vérification du coût
+  if (!canAfford(machine.cost)) return;
+
+  // Paiement et placement
+  payCost(machine.cost);
+  tile.machine = selectedMachine;
+
+  // Révélation des cases adjacentes
+  revealAdjacent(x, y);
+
+  renderGrid();
+  renderResources();
+}
+
 
   // Test coût
   if (!canAfford(machine.cost)) {
