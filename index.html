@@ -16,7 +16,7 @@
   .top-panels {
     display: flex;
     gap: 20px;
-    margin-bottom: 20px; /* IMPORTANT pour éviter le chevauchement */
+    margin-bottom: 20px;
   }
 
   .panel {
@@ -65,6 +65,7 @@
     cursor: pointer;
     font-size: 20px;
     user-select: none;
+    transition: opacity 0.15s;
   }
 
   .cell:hover {
@@ -187,6 +188,7 @@ const machines = [
 ];
 
 let selectedMachine = null;
+
 /* ============================
    GÉNÉRATION NATURELLE
 ============================ */
@@ -214,7 +216,7 @@ const clusterResources = ["forest", "iron", "stone", "copper", "water"];
 /* RESSOURCES RARES ISOLÉES */
 const isolatedResources = ["aluminum", "crystal", "uranium"];
 
-/* NOUVEAUX CLUSTER COUNT (réduits) */
+/* CLUSTERS RÉDUITS */
 const clusterCount = {
   forest: 7,
   iron: 4,
@@ -223,7 +225,7 @@ const clusterCount = {
   water: 3
 };
 
-const spreadChance = 0.30; // clusters plus petits
+const spreadChance = 0.30;
 
 /* GÉNÉRATION */
 function generateNaturalMap() {
@@ -274,11 +276,11 @@ function generateNaturalMap() {
     }
   }
 
-  /* RESSOURCES COURANTES ISOLÉES (nouveau) */
+  /* RESSOURCES COURANTES ISOLÉES (fer, cuivre, eau, aluminium, bois) */
   const isolatedCommon = ["iron", "copper", "water", "aluminum", "wood"];
 
   for (const res of isolatedCommon) {
-    const extra = Math.floor((gridWidth * gridHeight) * 0.002); // 0.2%
+    const extra = Math.floor((gridWidth * gridHeight) * 0.002); // ~0.2%
 
     let placed = 0;
 
@@ -310,10 +312,9 @@ function generateNaturalMap() {
   return map;
 }
 
-
 /* EMOJIS */
 const resourceEmojis = {
-  none: "", /* PAS D'EMOJI SUR LES CASES VIDES */
+  none: "", // pas d'emoji sur les cases vides
   forest: "🌲",
   iron: "🔘",
   stone: "🪨",
@@ -325,13 +326,69 @@ const resourceEmojis = {
   water: "💧"
 };
 
-/* GRILLE FINALE */
+/* GRILLE FINALE AVEC BROUILLARD */
 const grid = generateNaturalMap().map(row =>
   row.map(natural => ({
     machine: null,
-    natural
+    natural,
+    revealed: false
   }))
 );
+
+/* ============================
+   BROUILLARD : ZONE DE DÉPART
+============================ */
+
+function revealStartingArea() {
+  const cx = Math.floor(gridWidth / 2);
+  const cy = Math.floor(gridHeight / 2);
+
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const x = cx + dx;
+      const y = cy + dy;
+
+      if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
+        grid[y][x].revealed = true;
+      }
+    }
+  }
+}
+
+revealStartingArea();
+
+/* ============================
+   FONCTIONS BROUILLARD
+============================ */
+
+function revealAdjacent(x, y) {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const nx = x + dx;
+      const ny = y + dy;
+
+      if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
+        grid[ny][nx].revealed = true;
+      }
+    }
+  }
+}
+
+function isAdjacentToRevealed(x, y) {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const nx = x + dx;
+      const ny = y + dy;
+
+      if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
+        if (grid[ny][nx].revealed) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
 
 /* ============================
    RENDU UI
@@ -417,14 +474,47 @@ function renderGrid() {
 
       const tile = grid[y][x];
 
-      if (!tile.machine) {
-        cell.textContent = resourceEmojis[tile.natural];
+      if (!tile.revealed) {
+        cell.textContent = "⬛"; // brouillard
+        cell.style.opacity = "0.4";
       } else {
-        const m = machines.find(m => m.id === tile.machine);
-        cell.textContent = m.emoji;
+        cell.style.opacity = "1";
+        if (!tile.machine) {
+          cell.textContent = resourceEmojis[tile.natural];
+        } else {
+          const m = machines.find(m => m.id === tile.machine);
+          cell.textContent = m.emoji;
+        }
       }
 
-      cell.onclick = () => placeMachine(x, y);
+      cell.onclick = () => {
+        const t = grid[y][x];
+
+        // Si la case est cachée → tentative de révélation
+        if (!t.revealed) {
+
+          // doit être adjacente à une case déjà révélée
+          if (!isAdjacentToRevealed(x, y)) {
+            return;
+          }
+
+          // coût en énergie
+          if (resources.energy.amount < 20) {
+            return;
+          }
+
+          resources.energy.amount -= 20;
+          t.revealed = true;
+
+          renderResources();
+          renderGrid();
+          return; // pas de pose de machine dans le même clic
+        }
+
+        // Si déjà révélée → tentative de pose de machine
+        placeMachine(x, y);
+        renderGrid();
+      };
 
       cell.oncontextmenu = (e) => {
         e.preventDefault();
@@ -473,6 +563,10 @@ function placeMachine(x, y) {
   payCost(machine.cost);
 
   tile.machine = selectedMachine;
+
+  // Révéler les cases adjacentes lors de la construction
+  revealAdjacent(x, y);
+
   renderGrid();
   renderResources();
 }
