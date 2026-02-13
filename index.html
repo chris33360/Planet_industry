@@ -16,6 +16,7 @@
   .top-panels {
     display: flex;
     gap: 20px;
+    margin-bottom: 20px; /* IMPORTANT pour éviter le chevauchement */
   }
 
   .panel {
@@ -128,7 +129,7 @@ const productionRates = {
 };
 
 /* ============================
-   MACHINES FUSIONNÉES
+   MACHINES
 ============================ */
 
 const machines = [
@@ -194,37 +195,44 @@ let selectedMachine = null;
 const gridWidth = 40;
 const gridHeight = 18;
 
+/* NOUVEAUX POURCENTAGES */
 const weights = {
-  none: 0.65,
-  forest: 0.15,
-  iron: 0.08,
-  stone: 0.08,
-  copper: 0.06,
+  none: 0.66,
+  forest: 0.10,
+  iron: 0.04,
+  stone: 0.04,
+  copper: 0.03,
   oil: 0.03,
   water: 0.05,
-  aluminum: 0.012,
-  crystal: 0.004,
-  uranium: 0.004
+  aluminum: 0.02,
+  crystal: 0.01,
+  uranium: 0.006
 };
 
+/* RESSOURCES EN CLUSTERS */
 const clusterResources = ["forest", "iron", "stone", "copper", "water"];
+
+/* RESSOURCES ISOLÉES */
 const isolatedResources = ["aluminum", "crystal", "uranium"];
 
+/* CLUSTER COUNT ×2 */
 const clusterCount = {
-  forest: 10,
-  iron: 6,
-  stone: 6,
-  copper: 5,
-  water: 4
+  forest: 14,
+  iron: 8,
+  stone: 8,
+  copper: 6,
+  water: 6
 };
 
 const spreadChance = 0.45;
 
+/* GÉNÉRATION */
 function generateNaturalMap() {
   const map = Array.from({ length: gridHeight }, () =>
     Array.from({ length: gridWidth }, () => "none")
   );
 
+  /* CLUSTERS */
   for (const res of clusterResources) {
     const count = clusterCount[res];
 
@@ -249,6 +257,7 @@ function generateNaturalMap() {
     }
   }
 
+  /* RESSOURCES ISOLÉES */
   for (const res of isolatedResources) {
     const totalCells = gridWidth * gridHeight;
     const targetCount = Math.floor(weights[res] * totalCells);
@@ -266,6 +275,7 @@ function generateNaturalMap() {
     }
   }
 
+  /* PÉTROLE (isolé mais non clusterisé) */
   const oilCount = Math.floor(weights.oil * gridWidth * gridHeight);
   let oilPlaced = 0;
 
@@ -282,8 +292,9 @@ function generateNaturalMap() {
   return map;
 }
 
+/* EMOJIS */
 const resourceEmojis = {
-  none: "",
+  none: "", /* PAS D'EMOJI SUR LES CASES VIDES */
   forest: "🌲",
   iron: "🔘",
   stone: "🪨",
@@ -295,6 +306,7 @@ const resourceEmojis = {
   water: "💧"
 };
 
+/* GRILLE FINALE */
 const grid = generateNaturalMap().map(row =>
   row.map(natural => ({
     machine: null,
