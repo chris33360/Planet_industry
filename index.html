@@ -479,12 +479,25 @@ function computeRatePerSecond(resourceId) {
   const nat = grid[y][x].natural;
   const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
 
-  if (valid.includes(nat)) {
+  if (valid.includes(nat) && machine.produces === resourceId) {
     rate += productionRates[nat];
   }
 }
- else if (machine.consumes && machine.produces === resourceId) {
-        rate += machine.produceRate;
+
+else if (machine.consumes && machine.produces === resourceId) {
+  let canRun = true;
+
+  for (const [res, amount] of Object.entries(machine.consumes)) {
+    if (resources[res].amount < amount) {
+      canRun = false;
+      break;
+    }
+  }
+
+  if (canRun) {
+    rate += machine.produceRate;
+  }
+}
       } else if (machine.produces === resourceId) {
         rate += productionRates[resourceId] || 0;
       }
