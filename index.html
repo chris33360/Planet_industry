@@ -476,15 +476,33 @@ function computeRatePerSecond(resourceId) {
         if (grid[y][x].natural === "water") rate += 2;
         if (grid[y][x].natural === "oil") rate += 0.5;
       } else if (machine.id === "drill") {
-        const nat = grid[y][x].natural;
-        rate += productionRates[nat] || 0;
-      } else if (machine.consumes && machine.produces === resourceId) {
+  const nat = grid[y][x].natural;
+  const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
+
+  if (valid.includes(nat)) {
+    rate += productionRates[nat];
+  }
+}
+ else if (machine.consumes && machine.produces === resourceId) {
         rate += machine.produceRate;
       } else if (machine.produces === resourceId) {
         rate += productionRates[resourceId] || 0;
       }
     }
   }
+// Consommations
+for (let y = 0; y < gridHeight; y++) {
+  for (let x = 0; x < gridWidth; x++) {
+    const machineId = grid[y][x].machine;
+    if (!machineId) continue;
+
+    const machine = machines.find(m => m.id === machineId);
+
+    if (machine.consumes && machine.consumes[resourceId]) {
+      rate -= machine.consumes[resourceId];
+    }
+  }
+}
 
   return rate;
 }
