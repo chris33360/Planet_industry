@@ -174,13 +174,14 @@ const machines = [
     power: 1.2
   },
   {
-    id: "drill",
-    name: "Foreuse",
-    emoji: "⛏️",
-    needs: ["iron", "stone", "copper", "aluminum", "crystal"],
-    cost: { iron: 30 },
-    power: 1
-  },
+  id: "drill",
+  name: "Foreuse",
+  emoji: "⛏️",
+  needs: ["iron", "stone", "copper", "aluminum", "crystal", "uranium"],
+  cost: { iron: 30 },
+  power: 1.2 // consomme de l'énergie au lieu d'en produire
+},
+
   {
     id: "wood_to_coal",
     name: "Carboniseur",
@@ -666,10 +667,14 @@ function autoProductionTick() {
       // Foreuse (corrigée)
       else if (machine.id === "drill") {
         const nat = grid[y][x].natural;
-        if (productionRates[nat]) {
+      
+        const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
+      
+        if (valid.includes(nat)) {
           resources[nat].amount += productionRates[nat];
         }
       }
+
 
       // Machines qui consomment (carboniseur, centrale)
       else if (machine.consumes) {
