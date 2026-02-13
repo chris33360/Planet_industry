@@ -165,16 +165,16 @@ const machines = [
     power: 0.8
   },
   {
-    id: "liquid_extractor",
-    name: "Extracteur de liquides",
+    id: "extractor",
+    name: "Extracteur",
     emoji: "💧",
     needs: ["water", "oil"],
     cost: { aluminum: 30, iron: 20 },
     power: 1.2
   },
   {
-    id: "universal_drill",
-    name: "Foreuse polyvalente",
+    id: "drill",
+    name: "Foreuse",
     emoji: "⛏️",
     needs: ["iron", "stone", "copper", "aluminum", "crystal"],
     cost: { iron: 30 },
@@ -212,37 +212,6 @@ let selectedMachine = null;
 
 let gridWidth = 50;
 let gridHeight = 25;
-  
-// ============================
-// AJOUT : Ressources de départ
-// ============================
-
-function placeStartingResources() {
-  const revealedCells = [];
-
-  for (let y = 0; y < gridHeight; y++) {
-    for (let x = 0; x < gridWidth; x++) {
-      if (grid[y][x].revealed && grid[y][x].natural === "none") {
-        revealedCells.push({ x, y });
-      }
-    }
-  }
-
-  if (revealedCells.length < 2) return;
-
-  // Mélanger les cases révélées
-  revealedCells.sort(() => Math.random() - 0.5);
-
-  // 1ère case → bois
-  const woodCell = revealedCells[0];
-  grid[woodCell.y][woodCell.x].natural = "forest";
-
-  // 2ème case → fer
-  const ironCell = revealedCells[1];
-  grid[ironCell.y][ironCell.x].natural = "iron";
-}
-
-placeStartingResources();
 
 /* ============================
    GÉNÉRATION NATURELLE
@@ -398,6 +367,34 @@ function revealStartingArea() {
 revealStartingArea();
 
 /* ============================
+   AJOUT : BOIS + FER AU DÉPART
+============================ */
+
+function placeStartingResources() {
+  const revealedCells = [];
+
+  for (let y = 0; y < gridHeight; y++) {
+    for (let x = 0; x < gridWidth; x++) {
+      if (grid[y][x].revealed && grid[y][x].natural === "none") {
+        revealedCells.push({ x, y });
+      }
+    }
+  }
+
+  if (revealedCells.length < 2) return;
+
+  revealedCells.sort(() => Math.random() - 0.5);
+
+  const woodCell = revealedCells[0];
+  grid[woodCell.y][woodCell.x].natural = "forest";
+
+  const ironCell = revealedCells[1];
+  grid[ironCell.y][ironCell.x].natural = "iron";
+}
+
+placeStartingResources();
+
+/* ============================
    BROUILLARD
 ============================ */
 
@@ -442,10 +439,10 @@ function computeRatePerSecond(resourceId) {
 
       const machine = machines.find(m => m.id === machineId);
 
-      if (machine.id === "liquid_extractor") {
+      if (machine.id === "extractor") {
         if (grid[y][x].natural === "water") rate += 2;
         if (grid[y][x].natural === "oil") rate += 0.5;
-      } else if (machine.id === "universal_drill") {
+      } else if (machine.id === "drill") {
         const nat = grid[y][x].natural;
         rate += productionRates[nat] || 0;
       } else if (machine.consumes && machine.produces === resourceId) {
@@ -596,7 +593,6 @@ function removeMachine(x, y) {
   grid[y][x].machine = null;
   renderGrid();
 }
-
 /* ============================
    PRODUCTION + ÉNERGIE
 ============================ */
@@ -628,10 +624,10 @@ function autoProductionTick() {
 
       const machine = machines.find(m => m.id === machineId);
 
-      if (machine.id === "liquid_extractor") {
+      if (machine.id === "extractor") {
         if (grid[y][x].natural === "water") resources.water.amount += 2;
         if (grid[y][x].natural === "oil") resources.oil.amount += 0.5;
-      } else if (machine.id === "universal_drill") {
+      } else if (machine.id === "drill") {
         const nat = grid[y][x].natural;
         if (resources[nat]) {
           resources[nat].amount += productionRates[nat] || 0;
@@ -692,6 +688,7 @@ function restartGame() {
   );
 
   revealStartingArea();
+  placeStartingResources();
   renderResources();
   renderGrid();
 }
