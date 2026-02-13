@@ -212,7 +212,6 @@ let selectedMachine = null;
 
 let gridWidth = 50;
 let gridHeight = 25;
-
 /* ============================
    GÉNÉRATION NATURELLE
 ============================ */
@@ -248,6 +247,7 @@ function generateNaturalMap() {
     Array.from({ length: gridWidth }, () => "none")
   );
 
+  // Clusters
   for (const res of clusterResources) {
     const count = clusterCount[res];
 
@@ -272,6 +272,7 @@ function generateNaturalMap() {
     }
   }
 
+  // Rares isolées
   for (const res of isolatedResources) {
     const totalCells = gridWidth * gridHeight;
     const targetCount = Math.floor(weights[res] * totalCells);
@@ -289,6 +290,7 @@ function generateNaturalMap() {
     }
   }
 
+  // Courantes isolées
   const isolatedCommon = ["iron", "copper", "water", "aluminum", "wood"];
 
   for (const res of isolatedCommon) {
@@ -307,6 +309,7 @@ function generateNaturalMap() {
     }
   }
 
+  // Pétrole isolé
   const oilCount = Math.floor(weights.oil * gridWidth * gridHeight);
   let oilPlaced = 0;
 
@@ -447,7 +450,7 @@ function computeRatePerSecond(resourceId) {
         rate += productionRates[nat] || 0;
       } else if (machine.consumes && machine.produces === resourceId) {
         rate += machine.produceRate;
-      } else if (!machine.consumes && machine.produces === resourceId) {
+      } else if (machine.produces === resourceId) {
         rate += productionRates[resourceId] || 0;
       }
     }
@@ -544,55 +547,6 @@ function renderGrid() {
     }
   }
 }
-
-/* ============================
-   PLACEMENT / SUPPRESSION
-============================ */
-
-function canAfford(cost) {
-  if (!cost) return true;
-  return Object.entries(cost).every(([res, amount]) =>
-    resources[res].amount >= amount
-  );
-}
-
-function payCost(cost) {
-  if (!cost) return;
-  Object.entries(cost).forEach(([res, amount]) => {
-    resources[res].amount -= amount;
-  });
-}
-
-function placeMachine(x, y) {
-  if (!selectedMachine) return;
-
-  const tile = grid[y][x];
-  if (tile.machine) return;
-
-  const machine = machines.find(m => m.id === selectedMachine);
-
-  if (Array.isArray(machine.needs)) {
-    if (!machine.needs.includes(tile.natural)) return;
-  } else if (machine.needs !== "none" && tile.natural !== machine.needs) {
-    return;
-  }
-
-  if (!canAfford(machine.cost)) return;
-
-  payCost(machine.cost);
-
-  tile.machine = selectedMachine;
-
-  revealAdjacent(x, y);
-
-  renderGrid();
-  renderResources();
-}
-
-function removeMachine(x, y) {
-  grid[y][x].machine = null;
-  renderGrid();
-}
 /* ============================
    PRODUCTION + ÉNERGIE
 ============================ */
@@ -600,6 +554,7 @@ function removeMachine(x, y) {
 function autoProductionTick() {
   let totalPowerNeeded = 0;
 
+  // Calcul de la consommation totale d'énergie
   for (let y = 0; y < gridHeight; y++) {
     for (let x = 0; x < gridWidth; x++) {
       const machineId = grid[y][x].machine;
@@ -610,13 +565,16 @@ function autoProductionTick() {
     }
   }
 
+  // Si pas assez d'énergie → aucune machine ne tourne
   if (resources.energy.amount < totalPowerNeeded) {
     renderResources();
     return;
   }
 
+  // Déduction de l'énergie consommée
   resources.energy.amount -= totalPowerNeeded;
 
+  // Production des machines
   for (let y = 0; y < gridHeight; y++) {
     for (let x = 0; x < gridWidth; x++) {
       const machineId = grid[y][x].machine;
@@ -624,15 +582,22 @@ function autoProductionTick() {
 
       const machine = machines.find(m => m.id === machineId);
 
+      /* === Extracteur === */
       if (machine.id === "extractor") {
         if (grid[y][x].natural === "water") resources.water.amount += 2;
         if (grid[y][x].natural === "oil") resources.oil.amount += 0.5;
-      } else if (machine.id === "drill") {
+      }
+
+      /* === Foreuse (corrigée) === */
+      else if (machine.id === "drill") {
         const nat = grid[y][x].natural;
-        if (resources[nat]) {
-          resources[nat].amount += productionRates[nat] || 0;
+        if (productionRates[nat]) {
+          resources[nat].amount += productionRates[nat];
         }
-      } else if (machine.consumes) {
+      }
+
+      /* === Machines qui consomment (carboniseur, centrale) === */
+      else if (machine.consumes) {
         let canRun = true;
 
         for (const [res, amount] of Object.entries(machine.consumes)) {
@@ -649,10 +614,12 @@ function autoProductionTick() {
         }
 
         resources[machine.produces].amount += machine.produceRate;
-      } else {
-        const resId = machine.produces;
-        const rate = productionRates[resId] || 0;
-        resources[resId].amount += rate;
+      }
+
+      /* === Machines simples (scierie) === */
+      else if (machine.produces) {
+        const rate = productionRates[machine.produces] || 0;
+        resources[machine.produces].amount += rate;
       }
     }
   }
@@ -663,7 +630,7 @@ function autoProductionTick() {
 setInterval(autoProductionTick, 1000);
 
 /* ============================
-   RESTART & ROTATION
+   RESTART
 ============================ */
 
 function restartGame() {
@@ -692,6 +659,10 @@ function restartGame() {
   renderResources();
   renderGrid();
 }
+
+/* ============================
+   ROTATION 90°
+============================ */
 
 function toggleOrientation() {
   const oldWidth = gridWidth;
