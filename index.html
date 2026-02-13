@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Jeu de gestion – Carte 18x40</title>
+<title>Jeu de gestion – Carte 18x60</title>
 <style>
   body {
     font-family: system-ui, sans-serif;
@@ -12,6 +12,20 @@
   }
 
   h1 { margin-top: 0; }
+
+  .top-buttons {
+    margin-bottom: 15px;
+  }
+
+  .top-buttons button {
+    background: #475569;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
 
   .top-panels {
     display: flex;
@@ -49,7 +63,7 @@
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(40, 32px);
+    grid-template-columns: repeat(60, 32px);
     gap: 3px;
     margin-top: 20px;
   }
@@ -75,7 +89,12 @@
 </head>
 <body>
 
-<h1>Carte 18×40 – Industrie & Énergie</h1>
+<h1>Carte 18×60 – Industrie & Énergie</h1>
+
+<div class="top-buttons">
+  <button onclick="restartGame()">🔄 Recommencer la partie</button>
+  <button onclick="toggleOrientation()">↕️ Basculer orientation</button>
+</div>
 
 <div class="top-panels">
   <div class="panel">
@@ -101,7 +120,7 @@
 
 const resources = {
   wood:      { name: "Bois", emoji: "🪵", amount: 100 },
-  iron:      { name: "Fer", emoji: "🔘", amount: 50 },
+  iron:      { name: "Fer", emoji: "🔘", amount: 80 },   // +30 ajouté
   stone:     { name: "Pierre", emoji: "🪨", amount: 50 },
   copper:    { name: "Cuivre", emoji: "🟠", amount: 0 },
   coal:      { name: "Charbon", emoji: "⚫", amount: 0 },
@@ -190,13 +209,16 @@ const machines = [
 let selectedMachine = null;
 
 /* ============================
+   DIMENSIONS DYNAMIQUES
+============================ */
+
+let gridWidth = 60;
+let gridHeight = 18;
+
+/* ============================
    GÉNÉRATION NATURELLE
 ============================ */
 
-const gridWidth = 40;
-const gridHeight = 18;
-
-/* POURCENTAGES */
 const weights = {
   none: 0.66,
   forest: 0.10,
@@ -210,13 +232,9 @@ const weights = {
   uranium: 0.006
 };
 
-/* RESSOURCES EN CLUSTERS */
 const clusterResources = ["forest", "iron", "stone", "copper", "water"];
-
-/* RESSOURCES RARES ISOLÉES */
 const isolatedResources = ["aluminum", "crystal", "uranium"];
 
-/* CLUSTERS RÉDUITS */
 const clusterCount = {
   forest: 7,
   iron: 4,
@@ -227,13 +245,11 @@ const clusterCount = {
 
 const spreadChance = 0.30;
 
-/* GÉNÉRATION */
 function generateNaturalMap() {
   const map = Array.from({ length: gridHeight }, () =>
     Array.from({ length: gridWidth }, () => "none")
   );
 
-  /* CLUSTERS */
   for (const res of clusterResources) {
     const count = clusterCount[res];
 
@@ -258,7 +274,6 @@ function generateNaturalMap() {
     }
   }
 
-  /* RESSOURCES RARES ISOLÉES */
   for (const res of isolatedResources) {
     const totalCells = gridWidth * gridHeight;
     const targetCount = Math.floor(weights[res] * totalCells);
@@ -276,11 +291,10 @@ function generateNaturalMap() {
     }
   }
 
-  /* RESSOURCES COURANTES ISOLÉES (fer, cuivre, eau, aluminium, bois) */
   const isolatedCommon = ["iron", "copper", "water", "aluminum", "wood"];
 
   for (const res of isolatedCommon) {
-    const extra = Math.floor((gridWidth * gridHeight) * 0.002); // ~0.2%
+    const extra = Math.floor((gridWidth * gridHeight) * 0.002);
 
     let placed = 0;
 
@@ -295,7 +309,6 @@ function generateNaturalMap() {
     }
   }
 
-  /* PÉTROLE (isolé) */
   const oilCount = Math.floor(weights.oil * gridWidth * gridHeight);
   let oilPlaced = 0;
 
@@ -312,9 +325,8 @@ function generateNaturalMap() {
   return map;
 }
 
-/* EMOJIS */
 const resourceEmojis = {
-  none: "", // pas d'emoji sur les cases vides
+  none: "",
   forest: "🌲",
   iron: "🔘",
   stone: "🪨",
@@ -326,18 +338,17 @@ const resourceEmojis = {
   water: "💧"
 };
 
-/* GRILLE FINALE AVEC BROUILLARD */
-const grid = generateNaturalMap().map(row =>
+/* ============================
+   GRILLE AVEC BROUILLARD
+============================ */
+
+let grid = generateNaturalMap().map(row =>
   row.map(natural => ({
     machine: null,
     natural,
     revealed: false
   }))
 );
-
-/* ============================
-   BROUILLARD : ZONE DE DÉPART
-============================ */
 
 function revealStartingArea() {
   const cx = Math.floor(gridWidth / 2);
@@ -358,7 +369,7 @@ function revealStartingArea() {
 revealStartingArea();
 
 /* ============================
-   FONCTIONS BROUILLARD
+   BROUILLARD
 ============================ */
 
 function revealAdjacent(x, y) {
@@ -381,9 +392,7 @@ function isAdjacentToRevealed(x, y) {
       const ny = y + dy;
 
       if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
-        if (grid[ny][nx].revealed) {
-          return true;
-        }
+        if (grid[ny][nx].revealed) return true;
       }
     }
   }
@@ -475,7 +484,7 @@ function renderGrid() {
       const tile = grid[y][x];
 
       if (!tile.revealed) {
-        cell.textContent = "⬛"; // brouillard
+        cell.textContent = "⬛";
         cell.style.opacity = "0.4";
       } else {
         cell.style.opacity = "1";
@@ -490,28 +499,18 @@ function renderGrid() {
       cell.onclick = () => {
         const t = grid[y][x];
 
-        // Si la case est cachée → tentative de révélation
         if (!t.revealed) {
-
-          // doit être adjacente à une case déjà révélée
-          if (!isAdjacentToRevealed(x, y)) {
-            return;
-          }
-
-          // coût en énergie
-          if (resources.energy.amount < 20) {
-            return;
-          }
+          if (!isAdjacentToRevealed(x, y)) return;
+          if (resources.energy.amount < 20) return;
 
           resources.energy.amount -= 20;
           t.revealed = true;
 
           renderResources();
           renderGrid();
-          return; // pas de pose de machine dans le même clic
+          return;
         }
 
-        // Si déjà révélée → tentative de pose de machine
         placeMachine(x, y);
         renderGrid();
       };
@@ -564,7 +563,6 @@ function placeMachine(x, y) {
 
   tile.machine = selectedMachine;
 
-  // Révéler les cases adjacentes lors de la construction
   revealAdjacent(x, y);
 
   renderGrid();
@@ -608,57 +606,4 @@ function autoProductionTick() {
 
       const machine = machines.find(m => m.id === machineId);
 
-      if (machine.id === "liquid_extractor") {
-        if (grid[y][x].natural === "water") resources.water.amount += 2;
-        if (grid[y][x].natural === "oil") resources.oil.amount += 0.5;
-      }
-
-      else if (machine.id === "universal_drill") {
-        const nat = grid[y][x].natural;
-        resources[nat].amount += productionRates[nat] || 0;
-      }
-
-      else if (machine.consumes) {
-        let canRun = true;
-
-        for (const [res, amount] of Object.entries(machine.consumes)) {
-          if (resources[res].amount < amount) {
-            canRun = false;
-            break;
-          }
-        }
-
-        if (!canRun) continue;
-
-        for (const [res, amount] of Object.entries(machine.consumes)) {
-          resources[res].amount -= amount;
-        }
-
-        resources[machine.produces].amount += machine.produceRate;
-      }
-
-      else {
-        const resId = machine.produces;
-        const rate = productionRates[resId] || 0;
-        resources[resId].amount += rate;
-      }
-    }
-  }
-
-  renderResources();
-}
-
-setInterval(autoProductionTick, 1000);
-
-/* ============================
-   INIT
-============================ */
-
-renderResources();
-renderMachines();
-renderGrid();
-
-</script>
-
-</body>
-</html>
+      if (machine
