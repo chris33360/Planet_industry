@@ -564,40 +564,23 @@ function payCost(cost) {
 }
 
 function placeMachine(x, y) {
+  if (!selectedMachine) return;
+
   const tile = grid[y][x];
+  if (tile.machine) return;
+
   const machine = machines.find(m => m.id === selectedMachine);
 
-  console.log("CLICK", { x, y, selectedMachine, tile, machine });
-
-  if (!selectedMachine) {
-    console.log("→ Aucune machine sélectionnée");
-    return;
-  }
-
-  if (tile.machine) {
-    console.log("→ Case déjà occupée");
-    return;
-  }
-
-  // Test besoins
   if (Array.isArray(machine.needs)) {
-    if (!machine.needs.includes(tile.natural)) {
-      console.log("→ Besoin non satisfait", { needs: machine.needs, natural: tile.natural });
-      return;
-    }
+    if (!machine.needs.includes(tile.natural)) return;
   } else if (machine.needs !== "none" && tile.natural !== machine.needs) {
-    console.log("→ Besoin simple non satisfait", { need: machine.needs, natural: tile.natural });
     return;
   }
 
-  // Test coût
-  if (!canAfford(machine.cost)) {
-    console.log("→ Pas assez de ressources", { cost: machine.cost, resources });
-    return;
-  }
+  if (!canAfford(machine.cost)) return;
 
-  console.log("→ OK, on pose la machine");
   payCost(machine.cost);
+
   tile.machine = selectedMachine;
 
   revealAdjacent(x, y);
@@ -605,24 +588,6 @@ function placeMachine(x, y) {
   renderGrid();
   renderResources();
 }
-
-
-
-
-  // Test coût
-  if (!canAfford(machine.cost)) {
-    console.log("→ Pas assez de ressources", { cost: machine.cost, resources });
-    return;
-  }
-
-  console.log("→ OK, on pose la machine");
-  payCost(machine.cost);
-  tile.machine = selectedMachine;
-  revealAdjacent(x, y);
-  renderGrid();
-  renderResources();
-}
-
 
 function removeMachine(x, y) {
   grid[y][x].machine = null;
@@ -636,7 +601,7 @@ function removeMachine(x, y) {
 function autoProductionTick() {
   let totalPowerNeeded = 0;
 
-   for (let y = 0; y < gridHeight; y++) {
+  for (let y = 0; y < gridHeight; y++) {
     for (let x = 0; x < gridWidth; x++) {
       const machineId = grid[y][x].machine;
       if (!machineId) continue;
