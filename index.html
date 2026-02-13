@@ -128,6 +128,7 @@ const resources = {
   coal:      { name: "Charbon", emoji: "⚫", amount: 0 },
   oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
   aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
+  glass: { name: "Verre", emoji: "🧊", amount: 0 },
   water:     { name: "Eau", emoji: "💧", amount: 0 },
   uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
   crystal:   { name: "Cristal", emoji: "💎", amount: 0 },
@@ -191,6 +192,37 @@ const machines = [
     cost: { wood: 20, stone: 10 },
     power: 0.3
   },
+  {
+  id: "glassworks",
+  name: "Verrerie",
+  emoji: "🧊",
+  needs: "stone",
+  consumes: { crystal: 0.8 },
+  produces: "glass",
+  produceRate: 1.2,
+  cost: { aluminum: 40, stone: 20 },
+  power: 0.8
+},
+{
+  id: "solar_panel",
+  name: "Panneau solaire",
+  emoji: "🔆",
+  needs: "none",
+  produces: "energy",
+  produceRate: 0.6,
+  cost: { aluminum: 5, glass: 20 },
+  power: 0
+},
+  {
+  id: "solar_tower",
+  name: "Tour solaire",
+  emoji: "🌞",
+  needs: "none",
+  produces: "energy",
+  cost: { aluminum: 100, glass: 20, stone: 20 },
+  power: 0
+},
+
   {
     id: "coal_powerplant",
     name: "Centrale à charbon",
@@ -658,6 +690,28 @@ function autoProductionTick() {
 
         resources[machine.produces].amount += machine.produceRate;
       }
+// Tour solaire : produit 3x la production d'un panneau solaire adjacent
+else if (machine.id === "solar_tower") {
+  let bonus = 0;
+
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+
+      const nx = x + dx;
+      const ny = y + dy;
+
+      if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
+        const neighbor = grid[ny][nx].machine;
+        if (neighbor === "solar_panel") {
+          bonus += 3 * 0.6; // 3 × production du panneau solaire
+        }
+      }
+    }
+  }
+
+  resources.energy.amount += bonus;
+}
 
       // Machines simples (scierie)
       else if (machine.produces) {
