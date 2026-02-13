@@ -212,6 +212,37 @@ let selectedMachine = null;
 
 let gridWidth = 50;
 let gridHeight = 25;
+  
+// ============================
+// AJOUT : Ressources de départ
+// ============================
+
+function placeStartingResources() {
+  const revealedCells = [];
+
+  for (let y = 0; y < gridHeight; y++) {
+    for (let x = 0; x < gridWidth; x++) {
+      if (grid[y][x].revealed && grid[y][x].natural === "none") {
+        revealedCells.push({ x, y });
+      }
+    }
+  }
+
+  if (revealedCells.length < 2) return;
+
+  // Mélanger les cases révélées
+  revealedCells.sort(() => Math.random() - 0.5);
+
+  // 1ère case → bois
+  const woodCell = revealedCells[0];
+  grid[woodCell.y][woodCell.x].natural = "forest";
+
+  // 2ème case → fer
+  const ironCell = revealedCells[1];
+  grid[ironCell.y][ironCell.x].natural = "iron";
+}
+
+placeStartingResources();
 
 /* ============================
    GÉNÉRATION NATURELLE
