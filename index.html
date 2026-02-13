@@ -121,7 +121,7 @@
 
 const resources = {
   wood:      { name: "Bois", emoji: "🪵", amount: 100 },
-  iron:      { name: "Fer", emoji: "🔘", amount: 80 },   // +30 ajouté
+  iron:      { name: "Fer", emoji: "🔘", amount: 80 },
   stone:     { name: "Pierre", emoji: "🪨", amount: 50 },
   copper:    { name: "Cuivre", emoji: "🟠", amount: 0 },
   coal:      { name: "Charbon", emoji: "⚫", amount: 0 },
@@ -163,7 +163,6 @@ const machines = [
     cost: { wood: 30, iron: 10 },
     power: 0.8
   },
-
   {
     id: "liquid_extractor",
     name: "Extracteur de liquides",
@@ -172,7 +171,6 @@ const machines = [
     cost: { aluminum: 30, iron: 20 },
     power: 1.2
   },
-
   {
     id: "universal_drill",
     name: "Foreuse polyvalente",
@@ -181,7 +179,6 @@ const machines = [
     cost: { iron: 30 },
     power: 1
   },
-
   {
     id: "wood_to_coal",
     name: "Carboniseur",
@@ -193,7 +190,6 @@ const machines = [
     cost: { wood: 20, stone: 10 },
     power: 0.3
   },
-
   {
     id: "coal_powerplant",
     name: "Centrale à charbon",
@@ -251,6 +247,7 @@ function generateNaturalMap() {
     Array.from({ length: gridWidth }, () => "none")
   );
 
+  // Clusters
   for (const res of clusterResources) {
     const count = clusterCount[res];
 
@@ -275,6 +272,7 @@ function generateNaturalMap() {
     }
   }
 
+  // Rares isolées
   for (const res of isolatedResources) {
     const totalCells = gridWidth * gridHeight;
     const targetCount = Math.floor(weights[res] * totalCells);
@@ -292,6 +290,7 @@ function generateNaturalMap() {
     }
   }
 
+  // Courantes isolées
   const isolatedCommon = ["iron", "copper", "water", "aluminum", "wood"];
 
   for (const res of isolatedCommon) {
@@ -310,6 +309,7 @@ function generateNaturalMap() {
     }
   }
 
+  // Pétrole isolé
   const oilCount = Math.floor(weights.oil * gridWidth * gridHeight);
   let oilPlaced = 0;
 
@@ -417,18 +417,12 @@ function computeRatePerSecond(resourceId) {
       if (machine.id === "liquid_extractor") {
         if (grid[y][x].natural === "water") rate += 2;
         if (grid[y][x].natural === "oil") rate += 0.5;
-      }
-
-      else if (machine.id === "universal_drill") {
+      } else if (machine.id === "universal_drill") {
         const nat = grid[y][x].natural;
         rate += productionRates[nat] || 0;
-      }
-
-      else if (machine.consumes && machine.produces === resourceId) {
+      } else if (machine.consumes && machine.produces === resourceId) {
         rate += machine.produceRate;
-      }
-
-      else if (!machine.consumes && machine.produces === resourceId) {
+      } else if (!machine.consumes && machine.produces === resourceId) {
         rate += productionRates[resourceId] || 0;
       }
     }
@@ -580,7 +574,6 @@ function removeMachine(x, y) {
 ============================ */
 
 function autoProductionTick() {
-
   let totalPowerNeeded = 0;
 
   for (let y = 0; y < gridHeight; y++) {
@@ -605,4 +598,109 @@ function autoProductionTick() {
       const machineId = grid[y][x].machine;
       if (!machineId) continue;
 
-      const machine = machines.find(m => m.id
+      const machine = machines.find(m => m.id === machineId);
+
+      if (machine.id === "liquid_extractor") {
+        if (grid[y][x].natural === "water") resources.water.amount += 2;
+        if (grid[y][x].natural === "oil") resources.oil.amount += 0.5;
+      } else if (machine.id === "universal_drill") {
+        const nat = grid[y][x].natural;
+        resources[nat].amount += productionRates[nat] || 0;
+      } else if (machine.consumes) {
+        let canRun = true;
+
+        for (const [res, amount] of Object.entries(machine.consumes)) {
+          if (resources[res].amount < amount) {
+            canRun = false;
+            break;
+          }
+        }
+
+        if (!canRun) continue;
+
+        for (const [res, amount] of Object.entries(machine.consumes)) {
+          resources[res].amount -= amount;
+        }
+
+        resources[machine.produces].amount += machine.produceRate;
+      } else {
+        const resId = machine.produces;
+        const rate = productionRates[resId] || 0;
+        resources[resId].amount += rate;
+      }
+    }
+  }
+
+  renderResources();
+}
+
+setInterval(autoProductionTick, 1000);
+
+/* ============================
+   RESTART & ROTATION
+============================ */
+
+function restartGame() {
+  resources.wood.amount = 100;
+  resources.iron.amount = 80;
+  resources.stone.amount = 50;
+  resources.copper.amount = 0;
+  resources.coal.amount = 0;
+  resources.oil.amount = 0;
+  resources.aluminum.amount = 0;
+  resources.water.amount = 0;
+  resources.uranium.amount = 0;
+  resources.crystal.amount = 0;
+  resources.energy.amount = 100;
+
+  grid = generateNaturalMap().map(row =>
+    row.map(natural => ({
+      machine: null,
+      natural,
+      revealed: false
+    }))
+  );
+
+  revealStartingArea();
+  renderResources();
+  renderGrid();
+}
+
+function toggleOrientation() {
+  const oldWidth = gridWidth;
+  const oldHeight = gridHeight;
+
+  gridWidth = oldHeight;
+  gridHeight = oldWidth;
+
+  const newGrid = Array.from({ length: gridHeight }, () =>
+    Array.from({ length: gridWidth }, () => null)
+  );
+
+  for (let y = 0; y < oldHeight; y++) {
+    for (let x = 0; x < oldWidth; x++) {
+      const newX = y;
+      const newY = oldWidth - 1 - x;
+      newGrid[newY][newX] = grid[y][x];
+    }
+  }
+
+  grid = newGrid;
+
+  document.querySelector(".grid").style.gridTemplateColumns =
+    `repeat(${gridWidth}, 32px)`;
+
+  renderGrid();
+}
+
+/* ============================
+   INIT
+============================ */
+
+renderResources();
+renderMachines();
+renderGrid();
+</script>
+
+</body>
+</html>
