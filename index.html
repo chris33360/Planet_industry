@@ -12,6 +12,7 @@
   font-family: Arial, sans-serif;
 }
 
+/* Panneau de gauche */
 #leftPanel {
   width: 220px;
   background: #1e293b;
@@ -19,12 +20,20 @@
   border-right: 2px solid #334155;
 }
 
+/* Grille centrée dans un conteneur fixe */
 #grid {
   display: grid;
+  grid-template-columns: repeat(20, 32px);
   gap: 2px;
   padding: 10px;
+  margin: 0 auto;          /* centre la grille */
+  background: #0f172a;
+  border: 2px solid #334155;
+  border-radius: 6px;
+  width: fit-content;      /* empêche la grille de s'étaler */
 }
 
+/* Cases de la grille */
 .cell {
   width: 32px;
   height: 32px;
@@ -36,14 +45,7 @@
   cursor: pointer;
 }
 
-#techTree {
-  width: 220px;
-  background: #1e293b;
-  padding: 10px;
-  border-left: 2px solid #334155;
-  overflow-y: auto;
-}
-
+/* Tooltip */
 #tooltip {
   position: fixed;
   background: #1e293b;
@@ -56,294 +58,11 @@
   box-shadow: 0 0 6px #0005;
   z-index: 1000;
 }
-  </style>
-</head>
-
-<body>
-
-  <div id="leftPanel">
-    <h3>Machines</h3>
-    <div id="machineList"></div>
-
-    <h3>Ressources</h3>
-    <div id="resourceList"></div>
-  </div>
-
-  <div id="grid"></div>
-
-  <div id="techTree">
-    <h3>Arbre Technologique</h3>
-    <div id="techList"></div>
-  </div>
-
-  <div id="tooltip"></div>
-
-  <script>
-  
-    // ----------------------
-// RESSOURCES
-// ----------------------
-let resources = {
-  stone: { name: "Pierre", emoji: "🪨", amount: 0 },
-  iron: { name: "Fer", emoji: "🔘", amount: 0 },
-  copper: { name: "Cuivre", emoji: "🟠", amount: 0 },
-  aluminum: { name: "Aluminium", emoji: "🧪", amount: 0 },
-  crystal: { name: "Cristal", emoji: "💎", amount: 0 },
-  water: { name: "Eau", emoji: "💧", amount: 0 },
-  oil: { name: "Pétrole", emoji: "🛢️", amount: 0 },
-  glass: { name: "Verre", emoji: "🧫", amount: 0 },
-  solar_panel: { name: "Panneau solaire", emoji: "🔆", amount: 0 },
-  energy: { name: "Énergie", emoji: "⚡", amount: 0 }
-};
-
-// ----------------------
-// TAUX DE PRODUCTION
-// ----------------------
-let productionRates = {
-  stone: 1.5,
-  iron: 0.8,
-  copper: 0.6,
-  aluminum: 0.5,
-  crystal: 0.6,
-  glass: 1.8,
-  solar_panel: 1
-};
-
-// ----------------------
-// MACHINES
-// ----------------------
-let machines = [
-  {
-    id: "drill",
-    name: "Foreuse",
-    emoji: "⛏️",
-    needs: ["stone","iron","copper","aluminum","crystal"],
-    cost: { stone: 10 },
-    power: 1
-  },
-  {
-    id: "extractor",
-    name: "Extracteur",
-    emoji: "💧",
-    needs: ["water","oil"],
-    cost: { stone: 15 },
-    power: 1
-  },
-  {
-    id: "glass_factory",
-    name: "Verrerie",
-    emoji: "🏺",
-    consumes: { crystal: 1 },
-    produces: "glass",
-    produceRate: 1.8,
-    needs: "none",
-    cost: { iron: 30, aluminum: 10 },
-    power: 1.1
-  },
-  {
-    id: "solar_factory",
-    name: "Fabrique panneaux solaires",
-    emoji: "🔧",
-    consumes: { energy: 2, aluminum: 0.5, glass: 3 },
-    produces: "solar_panel",
-    produceRate: 1,
-    needs: "none",
-    cost: { aluminum: 100, glass: 20 },
-    power: 0
-  },
-  {
-    id: "solar_panel_machine",
-    name: "Panneau solaire",
-    emoji: "🔆",
-    produces: "energy",
-    produceRate: 0.6,
-    needs: "none",
-    cost: {},
-    power: 0
-  },
-  {
-    id: "solar_tower",
-    name: "Tour solaire",
-    emoji: "🗼",
-    produces: "energy",
-    produceRate: 0,
-    needs: "none",
-    cost: { aluminum: 80, glass: 20, stone: 10 },
-    power: 0
-  }
-];
-
-// ----------------------
-// TECH TREE
-// ----------------------
-let techTiers = [
-  { tier: 0, name: "Tier 0", cost: {}, bonus: 0, unlocked: true },
-  { tier: 1, name: "Tier 1", cost: { iron: 50, stone: 50 }, bonus: 10, unlocked: false },
-  { tier: 2, name: "Tier 2", cost: { aluminum: 40, glass: 20 }, bonus: 20, unlocked: false },
-  { tier: 3, name: "Tier 3", cost: { crystal: 30, iron: 100 }, bonus: 30, unlocked: false },
-  { tier: 4, name: "Tier 4", cost: { solar_panel: 10, aluminum: 150 }, bonus: 40, unlocked: false },
-  { tier: 5, name: "Tier 5", cost: { glass: 200, crystal: 100 }, bonus: 50, unlocked: false }
-];
-
-// ----------------------
-// GRILLE
-// ----------------------
-let gridWidth = 20;
-let gridHeight = 20;
-
-let grid = [];
-for (let y = 0; y < gridHeight; y++) {
-  grid[y] = [];
-  for (let x = 0; x < gridWidth; x++) {
-    grid[y][x] = {
-      natural: ["stone","iron","copper","aluminum","crystal","water","oil"][Math.floor(Math.random()*7)],
-      machine: null
-    };
-  }
-}
-
-let selectedMachine = null;
-// ----------------------
-// TOOLTIP (référence DOM)
-// ----------------------
-const tooltip = document.getElementById("tooltip");
-
-// ----------------------
-// RENDU DES MACHINES
-// ----------------------
-function renderMachines() {
-  const list = document.getElementById("machineList");
-  list.innerHTML = "";
-
-  machines.forEach(machine => {
-    const btn = document.createElement("button");
-    btn.textContent = machine.emoji + " " + machine.name;
-
-    // Tooltip
-    btn.onmousemove = (e) => {
-      tooltip.innerHTML = getMachineTooltip(machine);
-      tooltip.style.left = (e.pageX + 15) + "px";
-      tooltip.style.top = (e.pageY + 15) + "px";
-      tooltip.style.display = "block";
-    };
-    btn.onmouseleave = () => tooltip.style.display = "none";
-
-    // Sélection de machine
-    btn.onclick = () => selectedMachine = machine.id;
-
-    list.appendChild(btn);
-  });
-}
-
-// ----------------------
-// TOOLTIP DES MACHINES
-// ----------------------
-function getMachineTooltip(machine) {
-  let txt = `${machine.emoji} <b>${machine.name}</b><br>`;
-
-  if (machine.id === "drill") {
-    txt += `Produit selon ressource :<br>
-- Fer : +0.8/s<br>
-- Pierre : +1.5/s<br>
-- Cuivre : +0.6/s<br>
-- Aluminium : +0.5/s<br>
-- Cristal : +0.6/s<br>`;
-  }
-  else if (machine.id === "extractor") {
-    txt += `Produit :<br>- Eau : +2/s<br>- Pétrole : +0.5/s<br>`;
-  }
-  else if (machine.id === "glass_factory") {
-    txt += `Consomme : 1 💎 Cristal/s<br>Produit : +1.8 🧫 Verre/s<br>`;
-  }
-  else if (machine.id === "solar_factory") {
-    txt += `Consomme :<br>- 2 ⚡/s<br>- 0.5 🧪/s<br>- 3 🧫/s<br>
-Produit : +1 🔆/s<br>`;
-  }
-  else if (machine.id === "solar_panel_machine") {
-    txt += `Produit : +0.6 ⚡/s<br>`;
-  }
-  else if (machine.id === "solar_tower") {
-    txt += `Produit : 3 × la production des panneaux solaires adjacents<br>
-Chaque panneau : +0.6 ⚡<br>`;
-  }
-
-  return txt;
-}
-
-// ----------------------
-// RENDU DES RESSOURCES
-// ----------------------
-function renderResources() {
-  const list = document.getElementById("resourceList");
-  list.innerHTML = "";
-
-  for (let id in resources) {
-    const r = resources[id];
-    const rate = computeRatePerSecond(id); // défini dans C3
-    list.innerHTML += `${r.emoji} ${r.name} : ${r.amount.toFixed(1)} (${rate.toFixed(2)}/s)<br>`;
-  }
-}
-
-// ----------------------
-// TECH TREE — RENDU
-// ----------------------
-function renderTechTree() {
-  const list = document.getElementById("techList");
-  list.innerHTML = "";
-
-  techTiers.forEach(t => {
-    const div = document.createElement("div");
-    div.style.border = "1px solid #475569";
-    div.style.padding = "8px";
-    div.style.marginBottom = "8px";
-    div.style.borderRadius = "6px";
-    div.style.background = t.unlocked ? "#334155" : "#1e293b";
-
-    let costText = Object.entries(t.cost)
-      .map(([res, amt]) => `${resources[res].emoji}${amt}`)
-      .join(" ");
-
-    div.innerHTML = `
-<b>${t.name}</b><br>
-Bonus : +${t.bonus}%<br>
-Coût : ${costText || "Aucun"}<br>
-État : ${t.unlocked ? "Débloqué" : "Verrouillé"}<br>
-`;
-
-    if (!t.unlocked) {
-      const btn = document.createElement("button");
-      btn.textContent = "Débloquer";
-      btn.onclick = () => unlockTechTier(t.tier);
-      div.appendChild(btn);
-    }
-
-    list.appendChild(div);
-  });
-}
-
-// ----------------------
-// TECH TREE — DÉBLOCAGE
-// ----------------------
-function unlockTechTier(tier) {
-  const t = techTiers.find(x => x.tier === tier);
-  if (!canAfford(t.cost)) return;
-
-  payCost(t.cost);
-  t.unlocked = true;
-
-  renderTechTree();
-  renderResources();
-}
 // ----------------------
 // CALCUL DES DÉBITS
 // ----------------------
 function computeRatePerSecond(resourceId) {
   let rate = 0;
-
-  // Bonus global du tech tree
-  let globalBonus = techTiers
-    .filter(t => t.unlocked)
-    .reduce((sum, t) => sum + t.bonus, 0) / 100;
 
   for (let y = 0; y < gridHeight; y++) {
     for (let x = 0; x < gridWidth; x++) {
@@ -357,16 +76,16 @@ function computeRatePerSecond(resourceId) {
       if (id === "drill") {
         const nat = grid[y][x].natural;
         if (nat === resourceId) {
-          rate += productionRates[nat] * (1 + globalBonus);
+          rate += productionRates[nat];
         }
       }
 
       // Extracteur
       else if (id === "extractor") {
         if (resourceId === "water" && grid[y][x].natural === "water")
-          rate += 2 * (1 + globalBonus);
+          rate += 2;
         if (resourceId === "oil" && grid[y][x].natural === "oil")
-          rate += 0.5 * (1 + globalBonus);
+          rate += 0.5;
       }
 
       // Machines qui consomment
@@ -375,12 +94,12 @@ function computeRatePerSecond(resourceId) {
           rate -= m.consumes[resourceId];
 
         if (m.produces === resourceId)
-          rate += m.produceRate * (1 + globalBonus);
+          rate += m.produceRate;
       }
 
       // Panneau solaire
       else if (id === "solar_panel_machine" && resourceId === "energy") {
-        rate += 0.6 * (1 + globalBonus);
+        rate += 0.6;
       }
 
       // Tour solaire
@@ -401,7 +120,7 @@ function computeRatePerSecond(resourceId) {
           }
         }
 
-        rate += bonus * 3 * (1 + globalBonus);
+        rate += bonus * 3;
       }
     }
   }
@@ -426,7 +145,6 @@ setInterval(autoProductionTick, 100);
 // ----------------------
 function renderGrid() {
   const g = document.getElementById("grid");
-  g.style.gridTemplateColumns = `repeat(${gridWidth}, 32px)`;
   g.innerHTML = "";
 
   for (let y = 0; y < gridHeight; y++) {
@@ -480,13 +198,42 @@ function placeMachine(x, y) {
 }
 
 // ----------------------
+// FONCTIONS COÛTS
+// ----------------------
+function canAfford(cost) {
+  return Object.entries(cost).every(([res, amt]) => resources[res].amount >= amt);
+}
+
+function payCost(cost) {
+  Object.entries(cost).forEach(([res, amt]) => resources[res].amount -= amt);
+}
+
+// ----------------------
 // INITIALISATION
 // ----------------------
 renderMachines();
 renderGrid();
 renderResources();
-renderTechTree();
 
+  </style>
+</head>
+
+<body>
+
+  <div id="leftPanel">
+    <h3>Machines</h3>
+    <div id="machineList"></div>
+
+    <h3>Ressources</h3>
+    <div id="resourceList"></div>
+  </div>
+
+  <div id="grid"></div>
+
+  <div id="tooltip"></div>
+
+  <script>
+    /* JS dans les blocs C1, C2, C3 */
   </script>
 
 </body>
