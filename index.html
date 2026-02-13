@@ -107,7 +107,7 @@ const resources = {
   aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
   water:     { name: "Eau", emoji: "💧", amount: 0 },
   uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
-  crystal:   { name: "Cristal", emoji: "🔮", amount: 0 },
+  crystal:   { name: "Cristal", emoji: "💎", amount: 0 },
   energy:    { name: "Énergie", emoji: "⚡", amount: 100 }
 };
 
@@ -281,6 +281,19 @@ function generateNaturalMap() {
 
   return map;
 }
+
+const resourceEmojis = {
+  none: "⬛",
+  forest: "🌲",
+  iron: "🔘",
+  stone: "🪨",
+  copper: "🟠",
+  aluminum: "🧪",
+  crystal: "💎",
+  uranium: "☢️",
+  oil: "🛢️",
+  water: "💧"
+};
 
 const grid = generateNaturalMap().map(row =>
   row.map(natural => ({
