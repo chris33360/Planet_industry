@@ -134,7 +134,8 @@
 /* ============================
    RESSOURCES
 ============================ */
-
+let revealedCount = 0;
+const revealCost = 2;
 const resources = {
   wood:      { name: "Bois", emoji: "🪵", amount: 100 },
   iron:      { name: "Fer", emoji: "🔘", amount: 80 },
@@ -455,6 +456,12 @@ function getMachineTooltip(machine) {
 
   return text;
 }
+ /* ============================
+  Fonction pour calculer le coût dynamique
+============================ */ 
+function getRevealCost() {
+  return Math.ceil(revealCost * Math.pow(1.2, revealedCount));
+}
 
 /* ============================
    AJOUT : BOIS + FER AU DÉPART
@@ -769,12 +776,26 @@ function renderGrid() {
       cell.onclick = () => {
         const t = grid[y][x];
 
-        if (!t.revealed) {
-          if (!isAdjacentToRevealed(x, y)) return;
-          t.revealed = true;
-          renderGrid();
-          return;
-        }
+       if (!t.revealed) {
+  if (!isAdjacentToRevealed(x, y)) return;
+
+  const cost = getRevealCost();
+
+  if (resources.wood.amount < cost) {
+    console.log("Pas assez de bois pour révéler cette case");
+    return;
+  }
+
+  resources.wood.amount -= cost;
+
+  t.revealed = true;
+  revealedCount++;
+
+  renderResources();
+  renderGrid();
+  return;
+}
+
 
         placeMachine(x, y);
         renderGrid();
