@@ -10,12 +10,12 @@
     color: #e2e8f0;
     padding: 20px;
   }
+
   h1 { margin-top: 0; }
 
-  .container {
+  .top-panels {
     display: flex;
     gap: 20px;
-    flex-wrap: wrap;
   }
 
   .panel {
@@ -50,6 +50,7 @@
     display: grid;
     grid-template-columns: repeat(40, 32px);
     gap: 3px;
+    margin-top: 20px;
   }
 
   .cell {
@@ -74,26 +75,21 @@
 
 <h1>Carte 18×40 – Industrie & Énergie</h1>
 
-<div class="container">
-
-  <!-- Ressources -->
+<div class="top-panels">
   <div class="panel">
     <h2>Ressources</h2>
     <div id="resources"></div>
   </div>
 
-  <!-- Machines -->
   <div class="panel">
     <h2>Machines</h2>
     <div id="machines"></div>
   </div>
+</div>
 
-  <!-- Carte -->
-  <div class="panel">
-    <h2>Carte</h2>
-    <div id="grid" class="grid"></div>
-  </div>
-
+<div class="panel">
+  <h2>Carte</h2>
+  <div id="grid" class="grid"></div>
 </div>
 
 <script>
@@ -116,7 +112,7 @@ const resources = {
 };
 
 /* ============================
-   DÉBITS PAR SECONDE (brut)
+   DÉBITS PAR SECONDE
 ============================ */
 
 const productionRates = {
@@ -132,7 +128,7 @@ const productionRates = {
 };
 
 /* ============================
-   MACHINES
+   MACHINES FUSIONNÉES
 ============================ */
 
 const machines = [
@@ -145,78 +141,25 @@ const machines = [
     cost: { wood: 30, iron: 10 },
     power: 0.8
   },
+
   {
-    id: "extractor_water",
-    name: "Extracteur d'eau",
-    produces: "water",
+    id: "liquid_extractor",
+    name: "Extracteur de liquides",
     emoji: "💧",
-    needs: "water",
+    needs: ["water", "oil"],
     cost: { aluminum: 30, iron: 20 },
     power: 1.2
   },
+
   {
-    id: "extractor_oil",
-    name: "Extracteur de pétrole",
-    produces: "oil",
-    emoji: "🛢️",
-    needs: "oil",
-    cost: { aluminum: 30, iron: 20 },
-    power: 1.2
-  },
-  {
-    id: "drill_iron",
-    name: "Foreuse (Fer)",
-    produces: "iron",
-    emoji: "🔘",
-    needs: "iron",
+    id: "universal_drill",
+    name: "Foreuse polyvalente",
+    emoji: "⛏️",
+    needs: ["iron", "stone", "copper", "aluminum", "crystal"],
     cost: { iron: 30 },
     power: 1
   },
-  {
-    id: "drill_stone",
-    name: "Foreuse (Pierre)",
-    produces: "stone",
-    emoji: "🪨",
-    needs: "stone",
-    cost: { iron: 30 },
-    power: 1
-  },
-  {
-    id: "drill_copper",
-    name: "Foreuse (Cuivre)",
-    produces: "copper",
-    emoji: "🟠",
-    needs: "copper",
-    cost: { iron: 30 },
-    power: 1
-  },
-  {
-    id: "drill_aluminum",
-    name: "Foreuse (Aluminium)",
-    produces: "aluminum",
-    emoji: "🧪",
-    needs: "aluminum",
-    cost: { iron: 30 },
-    power: 1
-  },
-  {
-    id: "drill_crystal",
-    name: "Foreuse (Cristal)",
-    produces: "crystal",
-    emoji: "🔮",
-    needs: "crystal",
-    cost: { iron: 30 },
-    power: 1
-  },
-  {
-    id: "drill_uranium",
-    name: "Foreuse (Uranium)",
-    produces: "uranium",
-    emoji: "☢️",
-    needs: "uranium",
-    cost: { iron: 30 },
-    power: 1
-  },
+
   {
     id: "wood_to_coal",
     name: "Carboniseur",
@@ -228,6 +171,7 @@ const machines = [
     cost: { wood: 20, stone: 10 },
     power: 0.3
   },
+
   {
     id: "coal_powerplant",
     name: "Centrale à charbon",
@@ -244,44 +188,104 @@ const machines = [
 let selectedMachine = null;
 
 /* ============================
-   GRILLE 18×40 AVEC RESSOURCES
+   GÉNÉRATION NATURELLE
 ============================ */
 
 const gridWidth = 40;
 const gridHeight = 18;
 
-const resourceEmojis = {
-  none: "",
-  forest: "🌲",
-  iron: "🔘",
-  stone: "🪨",
-  copper: "🟠",
-  aluminum: "🧪",
-  crystal: "🔮",
-  uranium: "☢️",
-  oil: "🛢️",
-  water: "💧"
+const weights = {
+  none: 0.65,
+  forest: 0.15,
+  iron: 0.08,
+  stone: 0.08,
+  copper: 0.06,
+  oil: 0.03,
+  water: 0.05,
+  aluminum: 0.012,
+  crystal: 0.004,
+  uranium: 0.004
 };
 
-// rareté ajustée
-function randomResource() {
-  const r = Math.random();
-  if (r < 0.55) return "none";
-  if (r < 0.70) return "forest";
-  if (r < 0.78) return "iron";
-  if (r < 0.86) return "stone";
-  if (r < 0.92) return "copper";
-  if (r < 0.95) return "oil";
-  if (r < 0.98) return "water";
-  if (r < 0.995) return "aluminum";
-  if (r < 0.999) return "crystal";
-  return "uranium";
+const clusterResources = ["forest", "iron", "stone", "copper", "water"];
+const isolatedResources = ["aluminum", "crystal", "uranium"];
+
+const clusterCount = {
+  forest: 10,
+  iron: 6,
+  stone: 6,
+  copper: 5,
+  water: 4
+};
+
+const spreadChance = 0.45;
+
+function generateNaturalMap() {
+  const map = Array.from({ length: gridHeight }, () =>
+    Array.from({ length: gridWidth }, () => "none")
+  );
+
+  for (const res of clusterResources) {
+    const count = clusterCount[res];
+
+    for (let i = 0; i < count; i++) {
+      const cx = Math.floor(Math.random() * gridWidth);
+      const cy = Math.floor(Math.random() * gridHeight);
+
+      map[cy][cx] = res;
+
+      for (let dy = -3; dy <= 3; dy++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          if (Math.random() < spreadChance) {
+            const nx = cx + dx;
+            const ny = cy + dy;
+
+            if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
+              map[ny][nx] = res;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (const res of isolatedResources) {
+    const totalCells = gridWidth * gridHeight;
+    const targetCount = Math.floor(weights[res] * totalCells);
+
+    let placed = 0;
+
+    while (placed < targetCount) {
+      const x = Math.floor(Math.random() * gridWidth);
+      const y = Math.floor(Math.random() * gridHeight);
+
+      if (map[y][x] === "none") {
+        map[y][x] = res;
+        placed++;
+      }
+    }
+  }
+
+  const oilCount = Math.floor(weights.oil * gridWidth * gridHeight);
+  let oilPlaced = 0;
+
+  while (oilPlaced < oilCount) {
+    const x = Math.floor(Math.random() * gridWidth);
+    const y = Math.floor(Math.random() * gridHeight);
+
+    if (map[y][x] === "none") {
+      map[y][x] = "oil";
+      oilPlaced++;
+    }
+  }
+
+  return map;
 }
 
-const grid = Array.from({ length: gridHeight }, () =>
-  Array.from({ length: gridWidth }, () => ({
+const grid = generateNaturalMap().map(row =>
+  row.map(natural => ({
     machine: null,
-    natural: randomResource()
+    natural
   }))
 );
 
@@ -298,13 +302,21 @@ function computeRatePerSecond(resourceId) {
       if (!machineId) continue;
 
       const machine = machines.find(m => m.id === machineId);
-      if (!machine) continue;
 
-      // Machines de transformation
-      if (machine.consumes && machine.produces === resourceId) {
+      if (machine.id === "liquid_extractor") {
+        if (grid[y][x].natural === "water") rate += 2;
+        if (grid[y][x].natural === "oil") rate += 0.5;
+      }
+
+      else if (machine.id === "universal_drill") {
+        const nat = grid[y][x].natural;
+        rate += productionRates[nat] || 0;
+      }
+
+      else if (machine.consumes && machine.produces === resourceId) {
         rate += machine.produceRate;
       }
-      // Machines d'extraction
+
       else if (!machine.consumes && machine.produces === resourceId) {
         rate += productionRates[resourceId] || 0;
       }
@@ -405,9 +417,12 @@ function placeMachine(x, y) {
   if (tile.machine) return;
 
   const machine = machines.find(m => m.id === selectedMachine);
-  if (!machine) return;
 
-  if (machine.needs !== "none" && tile.natural !== machine.needs) return;
+  if (Array.isArray(machine.needs)) {
+    if (!machine.needs.includes(tile.natural)) return;
+  } else if (machine.needs !== "none" && tile.natural !== machine.needs) {
+    return;
+  }
 
   if (!canAfford(machine.cost)) return;
 
@@ -437,7 +452,6 @@ function autoProductionTick() {
       if (!machineId) continue;
 
       const machine = machines.find(m => m.id === machineId);
-      if (!machine) continue;
       totalPowerNeeded += machine.power;
     }
   }
@@ -455,10 +469,18 @@ function autoProductionTick() {
       if (!machineId) continue;
 
       const machine = machines.find(m => m.id === machineId);
-      if (!machine) continue;
 
-      // Machines de transformation
-      if (machine.consumes) {
+      if (machine.id === "liquid_extractor") {
+        if (grid[y][x].natural === "water") resources.water.amount += 2;
+        if (grid[y][x].natural === "oil") resources.oil.amount += 0.5;
+      }
+
+      else if (machine.id === "universal_drill") {
+        const nat = grid[y][x].natural;
+        resources[nat].amount += productionRates[nat] || 0;
+      }
+
+      else if (machine.consumes) {
         let canRun = true;
 
         for (const [res, amount] of Object.entries(machine.consumes)) {
@@ -476,7 +498,7 @@ function autoProductionTick() {
 
         resources[machine.produces].amount += machine.produceRate;
       }
-      // Machines d’extraction
+
       else {
         const resId = machine.produces;
         const rate = productionRates[resId] || 0;
