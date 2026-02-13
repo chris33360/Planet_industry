@@ -11,20 +11,22 @@
     padding: 20px;
   }
 
-  h1 { margin-top: 0; }
+  h1 { margin: 0; }
 
-  .top-buttons {
-    margin-bottom: 15px;
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
   }
 
-  .top-buttons button {
+  .header button {
     background: #475569;
     color: white;
     border: none;
     padding: 8px 14px;
     border-radius: 6px;
     cursor: pointer;
-    margin-right: 10px;
   }
 
   .top-panels {
@@ -89,10 +91,9 @@
 </head>
 <body>
 
-<h1>Carte 18×60 – Industrie & Énergie</h1>
-
-<div class="top-buttons">
-  <button onclick="restartGame()">🔄 Recommencer la partie</button>
+<div class="header">
+  <h1>Carte 18×60 – Industrie & Énergie</h1>
+  <button onclick="restartGame()">🔄 Recommencer</button>
   <button onclick="toggleOrientation()">↕️ Basculer orientation</button>
 </div>
 
@@ -604,6 +605,4 @@ function autoProductionTick() {
       const machineId = grid[y][x].machine;
       if (!machineId) continue;
 
-      const machine = machines.find(m => m.id === machineId);
-
-      if (machine
+      const machine = machines.find(m => m.id
