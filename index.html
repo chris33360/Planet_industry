@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Idle Factory</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Industrie & Énergie — V2</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="resources"></div>
-
-  <div id="main">
-    <div class="panel">
-      <h2>Carte</h2>
-      <div id="grid"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Machines</h2>
-      <div id="machineList"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Arbre technologique</h2>
-      <div id="techList"></div>
-    </div>
+<div id="tooltip" class="machine-tooltip"></div>
+<div id="tileTooltip" class="machine-tooltip"></div>
+<div class="header"><button onclick="restartGame()">🔄 Recommencer</button>
+</div>
+<div class="top-panels">
+  <div class="panel">
+    <h1>Ressources</h1>
+    <div id="resources"> </div>
   </div>
-
-  <script src="game.js"></script>
+  <div class="panel">
+    <h1>Machines</h1>
+    <div id="machines"></div>
+  </div>
+  <div class="panel" id="tech-tree">
+  <h1>Arbre technologique</h1>
+  <div id="techList"></div>
+</div>
+</div>
+<div class="panel">
+<div id="grid" class="grid"></div>
+</div>
+<script src="game.js"></script>
 </body>
 </html>
