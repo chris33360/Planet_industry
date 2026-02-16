@@ -16,8 +16,8 @@
   .header {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 10px;
+    gap: 10px;
+    margin-bottom: 5px;
   }
 
   .header button {
@@ -125,21 +125,21 @@
 <body>
 <div id="tooltip" class="machine-tooltip"></div>
 <div id="tileTooltip" class="machine-tooltip"></div>
-<div class="header">
+<div class="header"><button onclick="restartGame()">🔄 Recommencer</button>
 </div>
 
 <div class="top-panels">
   <div class="panel">
-    <h1>Ressources<button onclick="restartGame()">🔄 Recommencer</button></h1>
+    <h1>Ressources</h1>
     <div id="resources"> </div>
   </div>
 
   <div class="panel">
-    <h2>Machines</h2>
+    <h1>Machines</h1>
     <div id="machines"></div>
   </div>
   <div class="panel" id="tech-tree">
-  <h2>Arbre technologique</h2>
+  <h1>Arbre technologique</h1>
   <div id="techList"></div>
 </div>
 
@@ -205,14 +205,14 @@ const productionRates = {
  {
   id: "electronics",
   name: "Électronique avancée",
-  cost: { wood: 400, stone: 3 },
+  cost: { wood: 4, stone: 3 },
   unlocked: false,
   bonus: "factoryBoost"   // ✔️ Ajout
 },
   {
     id: "battery_tech",
     name: "Stockage d'énergie",
-    cost: { wood: 50, stone: 40 },
+    cost: { wood: 5, stone: 4 },
     unlocked: false
   },
   {
