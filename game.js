@@ -2,20 +2,28 @@
    RESSOURCES
 ============================ */
 let revealedCount = 0;
+let factoryBoost = 1; // 1 = normal, 1.1 = +10%
 const revealCost = 2;
 const resources = {
-  wood:      { name: "Bois", emoji: "🪵", amount: 100 },
-  iron:      { name: "Fer", emoji: "🔘", amount: 80 },
-  stone:     { name: "Pierre", emoji: "🪨", amount: 50 },
-  copper:    { name: "Cuivre", emoji: "🟠", amount: 0 },
-  coal:      { name: "Charbon", emoji: "⚫", amount: 10 },
-  oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
-  aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
-  water:     { name: "Eau", emoji: "💧", amount: 0 },
-  uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
-  crystal:   { name: "Cristal", emoji: "💎", amount: 0 },
-  glass:     { name: "Verre", emoji: "🧊", amount: 0 },
-  energy:    { name: "Énergie", emoji: "⚡", amount: 0 } // non stockable
+   wood:      { name: "Bois", emoji: "🪵", amount: 100 },
+     iron:      { name: "Fer", emoji: "🔘", amount: 80 },
+     stone:     { name: "Pierre", emoji: "🪨", amount: 50 },
+     copper:    { name: "Cuivre", emoji: "🟠", amount: 0 },
+     coal:      { name: "Charbon", emoji: "⚫", amount: 10 },
+     oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
+     aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
+     uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
+     crystal:   { name: "Cristal", emoji: "💎", amount: 0 },
+     glass:     { name: "Verre", emoji: "🧊", amount: 0 },
+     cable:     { name: "Câble", emoji: "🔌", amount: 0 },
+     plastic: { name: "Plastique", emoji: "🧴", amount: 0 },
+     circuit: { name: "Circuit", emoji: "🔁", amount: 0 },
+     fuel: { name: "Carburant", emoji: "⛽", amount: 0 },
+     engine: { name: "Moteur", emoji: "⚙️", amount: 0 },
+   robot: { name: "Robot", emoji: "🤖", amount: 0 },
+   battery: { name: "Batterie", emoji: "🔋", amount: 0 },
+   energy:    { name: "Énergie", emoji: "⚡", amount: 0 } // non stockable
+  
 };
 
 /* ============================
@@ -23,7 +31,6 @@ const resources = {
 ============================ */
 
 const productionRates = {
-  water: 2,
   oil: 0.5,
   wood: 2,
   stone: 1.5,
@@ -33,6 +40,10 @@ const productionRates = {
   uranium: 0.2,
   iron: 0.8
 };
+
+/* ============================
+   MACHINES
+============================ */
 
 /* ============================
    MACHINES
@@ -52,18 +63,19 @@ const machines = [
     id: "extractor",
     name: "Extracteur",
     emoji: "💧",
-    needs: ["water", "oil"],
+    needs: ["oil"],
     cost: { aluminum: 30, iron: 20 },
     power: 1.2
   },
-  {
-    id: "drill",
-    name: "Foreuse",
-    emoji: "⛏️",
-    needs: ["iron", "stone", "copper", "aluminum", "crystal", "uranium"],
-    cost: { iron: 30 },
-    power: 1.2
-  },
+{
+  id: "drill",
+  name: "Foreuse",
+  emoji: "⛏️",
+  needs: ["iron", "stone", "copper", "aluminum", "crystal", "uranium"],
+  cost: { wood: 30 },   // ✔️ Nouveau coût
+  power: 1.2
+},
+
   {
     id: "wood_to_coal",
     name: "Carboniseur",
@@ -86,19 +98,98 @@ const machines = [
     cost: { iron: 40, stone: 20 },
     power: 0
   },
+{
+  id: "engine_factory",
+  name: "Usine de moteurs",
+  emoji: "⚙️",
+  needs: "none",
+  consumes: { cable: 2 },
+  produces: "engine",
+  produceRate: 1,
+  cost: { iron: 90, aluminum: 70 },
+  power: 2
+},
+
+{
+  id: "robot_factory",
+  name: "Usine de robots",
+  emoji: "🤖",
+  needs: "none",
+  consumes: { cable: 5, aluminum: 1.4, engine: 2 },
+  produces: "robot",
+  produceRate: 1,
+  cost: { cable: 300, aluminum: 90 },
+  power: 0.7
+},
 
   /* === VERRERIE === */
   {
-    id: "glassworks",
-    name: "Verrerie",
-    emoji: "🧊",
-    needs: "stone",
-    consumes: { crystal: 0.8 },
-    produces: "glass",
-    produceRate: 1.2,
-    cost: { aluminum: 40, stone: 20 },
-    power: 0.8
-  },
+  id: "glassworks",
+  name: "Verrerie",
+  emoji: "🧊",
+  needs: "none", 
+  consumes: { crystal: 0.8 },
+  produces: "glass",
+  produceRate: 1.2,
+  cost: { aluminum: 40, stone: 20 },
+  power: 0.8
+},{
+  id: "refinery",
+  name: "Raffinerie",
+  emoji: "🏭",
+  needs: "none",
+  consumes: { oil: 2 },
+  produces: "fuel",
+  produceRate: 3,
+  cost: { iron: 120, aluminum: 100 },
+  power: 2
+},
+{
+  id: "battery_factory",
+  name: "Usine de batteries",
+  emoji: "🔋",
+  needs: "none",
+  consumes: { copper: 0.6, aluminum: 0.7 },
+  produces: "battery",
+  produceRate: 1,
+  cost: { aluminum: 90, copper: 40 },
+  power: 0.7
+},
+
+  {
+  id: "plastic_factory",
+  name: "Usine de plastique",
+  emoji: "🧴",
+  needs: "none",
+  consumes: { oil: 0.8 },
+  produces: "plastic",
+  produceRate: 1.3,
+  cost: { iron: 50, copper: 10 },
+  power: 0.7
+},
+{
+  id: "circuit_factory",
+  name: "Usine de circuits",
+  emoji: "🔁",
+  needs: "none",
+  consumes: { copper: 0.6, plastic: 0.7 },
+  produces: "circuit",
+  produceRate: 0.9,
+  cost: { aluminum: 50, copper: 10 },
+  power: 0.5
+},
+
+{
+  id: "cable_factory",
+  name: "Usine de câbles",
+  emoji: "🔌",
+  needs: "none",
+  consumes: { copper: 1 },
+  produces: "cable",
+  produceRate: 2.2,
+  cost: { iron: 50, wood: 10 },
+  power: 1.5
+},
 
   /* === PANNEAU SOLAIRE === */
   {
@@ -144,21 +235,19 @@ const weights = {
   stone: 0.04,
   copper: 0.03,
   oil: 0.03,
-  water: 0.05,
   aluminum: 0.02,
   crystal: 0.01,
   uranium: 0.006
 };
 
-const clusterResources = ["forest", "iron", "stone", "copper", "water"];
+const clusterResources = ["forest", "iron", "stone", "copper"];
 const isolatedResources = ["aluminum", "crystal", "uranium"];
 
 const clusterCount = {
   forest: 7,
   iron: 4,
   stone: 4,
-  copper: 3,
-  water: 3
+  copper: 3
 };
 
 const spreadChance = 0.30;
@@ -209,7 +298,7 @@ function generateNaturalMap() {
     }
   }
 
-  const isolatedCommon = ["iron", "copper", "water", "aluminum", "forest"];
+  const isolatedCommon = ["iron", "copper", "aluminum", "forest"];
 
   for (const res of isolatedCommon) {
     const extra = Math.floor((gridWidth * gridHeight) * 0.002);
@@ -252,8 +341,7 @@ const resourceEmojis = {
   aluminum: "🧪",
   crystal: "💎",
   uranium: "☢️",
-  oil: "🛢️",
-  water: "💧"
+  oil: "🛢️"
 };
 
 /* ============================
@@ -357,38 +445,6 @@ function placeStartingResources() {
 }
 
 placeStartingResources();
-
-/* ============================
-   BROUILLARD
-============================ */
-
-function revealAdjacent(x, y) {
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      const nx = x + dx;
-      const ny = y + dy;
-
-      if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
-        grid[ny][nx].revealed = true;
-      }
-    }
-  }
-}
-
-function isAdjacentToRevealed(x, y) {
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      const nx = x + dx;
-      const ny = y + dy;
-
-      if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
-        if (grid[ny][nx].revealed) return true;
-      }
-    }
-  }
-  return false;
-}
-
 /* ============================
    RENDU UI
 ============================ */
@@ -458,9 +514,6 @@ function computeRatePerSecond(resourceId) {
 
       /* === Extracteur === */
       if (machine.id === "extractor") {
-        if (resourceId === "water" && grid[y][x].natural === "water") {
-          rate += 2 * energyRatio;
-        }
         if (resourceId === "oil" && grid[y][x].natural === "oil") {
           rate += 0.5 * energyRatio;
         }
@@ -716,8 +769,6 @@ function placeMachine(x, y) {
 
   tile.machine = selectedMachine;
 
-  revealAdjacent(x, y);
-
   renderGrid();
   renderResources();
 }
@@ -786,7 +837,6 @@ function autoProductionTick() {
 
       /* === Extracteur === */
       if (machine.id === "extractor") {
-        if (grid[y][x].natural === "water") resources.water.amount += 2 * energyRatio;
         if (grid[y][x].natural === "oil") resources.oil.amount += 0.5 * energyRatio;
       }
 
