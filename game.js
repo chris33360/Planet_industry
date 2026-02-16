@@ -13,6 +13,7 @@ const resources = {
   coal:      { name: "Charbon", emoji: "⚫", amount: 10 },
   oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
   aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
+  water:     { name: "Eau", emoji: "💧", amount: 0 },
   uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
   crystal:   { name: "Cristal", emoji: "💎", amount: 0 },
   glass:     { name: "Verre", emoji: "🧊", amount: 0 },
@@ -33,6 +34,7 @@ battery: { name: "Batterie", emoji: "🔋", amount: 0 },
 ============================ */
 
 const productionRates = {
+  water: 2,
   oil: 0.5,
   wood: 2,
   stone: 1.5,
@@ -51,20 +53,20 @@ const productionRates = {
  {
   id: "electronics",
   name: "Électronique avancée",
-  cost: { cable: 300 , glass: 200 },
+  cost: { aluminum: 400, copper: 300 },
   unlocked: false,
   bonus: "factoryBoost"   // ✔️ Ajout
 },
   {
     id: "battery_tech",
-    name: "Stockage d'énergie",
-    cost: { wood: 5, stone: 4 },
+    name: "Technologie des batteries",
+    cost: { aluminum: 50, copper: 40 },
     unlocked: false
   },
   {
     id: "robotics",
-    name: "Exploration terrestre",
-    cost: { robot: 200, fuel: 80 },
+    name: "Robotique",
+    cost: { robto: 200, fuel: 80 },
     unlocked: false
   }
 ];
@@ -87,7 +89,7 @@ const machines = [
     id: "extractor",
     name: "Extracteur",
     emoji: "💧",
-    needs: ["oil"],
+    needs: ["water", "oil"],
     cost: { aluminum: 30, iron: 20 },
     power: 1.2
   },
@@ -259,19 +261,21 @@ const weights = {
   stone: 0.04,
   copper: 0.03,
   oil: 0.03,
+  water: 0.05,
   aluminum: 0.02,
   crystal: 0.01,
   uranium: 0.006
 };
 
-const clusterResources = ["forest", "iron", "stone", "copper"];
+const clusterResources = ["forest", "iron", "stone", "copper", "water"];
 const isolatedResources = ["aluminum", "crystal", "uranium"];
 
 const clusterCount = {
   forest: 7,
   iron: 4,
   stone: 4,
-  copper: 3
+  copper: 3,
+  water: 3
 };
 
 const spreadChance = 0.30;
@@ -322,7 +326,7 @@ function generateNaturalMap() {
     }
   }
 
-  const isolatedCommon = ["iron", "copper", "aluminum", "forest"];
+  const isolatedCommon = ["iron", "copper", "water", "aluminum", "forest"];
 
   for (const res of isolatedCommon) {
     const extra = Math.floor((gridWidth * gridHeight) * 0.002);
@@ -365,7 +369,8 @@ const resourceEmojis = {
   aluminum: "🧪",
   crystal: "💎",
   uranium: "☢️",
-  oil: "🛢️"
+  oil: "🛢️",
+  water: "💧"
 };
 
 /* ============================
@@ -397,19 +402,7 @@ function revealStartingArea() {
 }
 
 revealStartingArea();
-<
-  /* ============================
-reveler carte
-============================ */
-  function revealEntireMap() {
-  for (let y = 0; y < gridSize; y++) {
-    for (let x = 0; x < gridSize; x++) {
-      grid[y][x].revealed = true;
-    }
-  }
-  renderGrid();
-}
-
+renderTechTree();
   /* ============================
   Tooltips
 ============================ */
@@ -544,13 +537,9 @@ function isAdjacentToRevealed(x, y) {
 
       payCost(tech.cost);
       tech.unlocked = true;
-      if (tech.id === "robotics") {
-    revealEntireMap();
-}
       if (tech.bonus === "factoryBoost") {
   factoryBoost = 1.1; // ✔️ +10% de rendement
 }
-
 
       renderTechTree();
       renderMachines();
@@ -630,6 +619,9 @@ function computeRatePerSecond(resourceId) {
 
       /* === Extracteur === */
       if (machine.id === "extractor") {
+        if (resourceId === "water" && grid[y][x].natural === "water") {
+          rate += 2 * energyRatio * factoryBoost;
+        }
         if (resourceId === "oil" && grid[y][x].natural === "oil") {
           rate += 0.5 * energyRatio  * factoryBoost;
         }
@@ -989,6 +981,7 @@ function autoProductionTick() {
 
       /* === Extracteur === */
       if (machine.id === "extractor") {
+        if (grid[y][x].natural === "water") resources.water.amount += 2 * energyRatio;
         if (grid[y][x].natural === "oil") resources.oil.amount += 0.5 * energyRatio;
       }
 
@@ -1100,3 +1093,5 @@ function toggleOrientation() {
 renderResources();
 renderMachines();
 renderGrid();
+
+</script>
