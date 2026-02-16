@@ -5,7 +5,7 @@
     padding: 20px;
   }
 
-  h1 { margin: 0;font-size: 16px; }
+  h1 { margin: 0;font-size: 14px; }
 
   .header {
     display: flex;
@@ -18,7 +18,7 @@
     background: #475569;
     color: white;
     border: none;
-    padding: 8px 14px;
+    padding: 4px 7px;
     border-radius: 6px;
     cursor: pointer;
   }
@@ -90,7 +90,7 @@
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #334155;
-  font-size: 14px;
+  font-size: 12px;
   pointer-events: none;
   white-space: pre-line;
   z-index: 1000;
