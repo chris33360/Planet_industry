@@ -2,8 +2,6 @@
    RESSOURCES
 ============================ */
 let revealedCount = 0;
-let factoryBoost = 1; // 1 = normal, 1.1 = +10%
-
 const revealCost = 2;
 const resources = {
   wood:      { name: "Bois", emoji: "🪵", amount: 100 },
@@ -17,16 +15,7 @@ const resources = {
   uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
   crystal:   { name: "Cristal", emoji: "💎", amount: 0 },
   glass:     { name: "Verre", emoji: "🧊", amount: 0 },
-  cable:     { name: "Câble", emoji: "🔌", amount: 0 },
-  plastic: { name: "Plastique", emoji: "🧴", amount: 0 },
-  circuit: { name: "Circuit", emoji: "🔁", amount: 0 },
-  fuel: { name: "Carburant", emoji: "⛽", amount: 0 },
-  engine: { name: "Moteur", emoji: "⚙️", amount: 0 },
-robot: { name: "Robot", emoji: "🤖", amount: 0 },
-
-battery: { name: "Batterie", emoji: "🔋", amount: 0 },
   energy:    { name: "Énergie", emoji: "⚡", amount: 0 } // non stockable
-  
 };
 
 /* ============================
@@ -44,32 +33,6 @@ const productionRates = {
   uranium: 0.2,
   iron: 0.8
 };
-
-/* ============================
-   MACHINES
-============================ */
-
-  const technologies = [
- {
-  id: "electronics",
-  name: "Électronique avancée",
-  cost: { aluminum: 400, copper: 300 },
-  unlocked: false,
-  bonus: "factoryBoost"   // ✔️ Ajout
-},
-  {
-    id: "battery_tech",
-    name: "Technologie des batteries",
-    cost: { aluminum: 50, copper: 40 },
-    unlocked: false
-  },
-  {
-    id: "robotics",
-    name: "Robotique",
-    cost: { robto: 200, fuel: 80 },
-    unlocked: false
-  }
-];
 
 /* ============================
    MACHINES
@@ -93,15 +56,14 @@ const machines = [
     cost: { aluminum: 30, iron: 20 },
     power: 1.2
   },
-{
-  id: "drill",
-  name: "Foreuse",
-  emoji: "⛏️",
-  needs: ["iron", "stone", "copper", "aluminum", "crystal", "uranium"],
-  cost: { wood: 30 },   // ✔️ Nouveau coût
-  power: 1.2
-},
-
+  {
+    id: "drill",
+    name: "Foreuse",
+    emoji: "⛏️",
+    needs: ["iron", "stone", "copper", "aluminum", "crystal", "uranium"],
+    cost: { iron: 30 },
+    power: 1.2
+  },
   {
     id: "wood_to_coal",
     name: "Carboniseur",
@@ -124,98 +86,19 @@ const machines = [
     cost: { iron: 40, stone: 20 },
     power: 0
   },
-{
-  id: "engine_factory",
-  name: "Usine de moteurs",
-  emoji: "⚙️",
-  needs: "none",
-  consumes: { cable: 2 },
-  produces: "engine",
-  produceRate: 1,
-  cost: { iron: 90, aluminum: 70 },
-  power: 2
-},
-
-{
-  id: "robot_factory",
-  name: "Usine de robots",
-  emoji: "🤖",
-  needs: "none",
-  consumes: { cable: 5, aluminum: 1.4, engine: 2 },
-  produces: "robot",
-  produceRate: 1,
-  cost: { cable: 300, aluminum: 90 },
-  power: 0.7
-},
 
   /* === VERRERIE === */
   {
-  id: "glassworks",
-  name: "Verrerie",
-  emoji: "🧊",
-  needs: "none",   // ✔️ Maintenant plaçable sur les cases vides
-  consumes: { crystal: 0.8 },
-  produces: "glass",
-  produceRate: 1.2,
-  cost: { aluminum: 40, stone: 20 },
-  power: 0.8
-},{
-  id: "refinery",
-  name: "Raffinerie",
-  emoji: "🏭",
-  needs: "none",
-  consumes: { oil: 2 },
-  produces: "fuel",
-  produceRate: 3,
-  cost: { iron: 120, aluminum: 100 },
-  power: 2
-},
-{
-  id: "battery_factory",
-  name: "Usine de batteries",
-  emoji: "🔋",
-  needs: "none",
-  consumes: { copper: 0.6, aluminum: 0.7 },
-  produces: "battery",
-  produceRate: 1,
-  cost: { aluminum: 90, copper: 40 },
-  power: 0.7
-},
-
-  {
-  id: "plastic_factory",
-  name: "Usine de plastique",
-  emoji: "🧴",
-  needs: "none",
-  consumes: { oil: 0.8 },
-  produces: "plastic",
-  produceRate: 1.3,
-  cost: { iron: 50, copper: 10 },
-  power: 0.7
-},
-{
-  id: "circuit_factory",
-  name: "Usine de circuits",
-  emoji: "🔁",
-  needs: "none",
-  consumes: { copper: 0.6, plastic: 0.7 },
-  produces: "circuit",
-  produceRate: 0.9,
-  cost: { aluminum: 50, copper: 10 },
-  power: 0.5
-},
-
-{
-  id: "cable_factory",
-  name: "Usine de câbles",
-  emoji: "🔌",
-  needs: "none",
-  consumes: { copper: 1 },
-  produces: "cable",
-  produceRate: 2.2,
-  cost: { iron: 50, wood: 10 },
-  power: 1.5
-},
+    id: "glassworks",
+    name: "Verrerie",
+    emoji: "🧊",
+    needs: "stone",
+    consumes: { crystal: 0.8 },
+    produces: "glass",
+    produceRate: 1.2,
+    cost: { aluminum: 40, stone: 20 },
+    power: 0.8
+  },
 
   /* === PANNEAU SOLAIRE === */
   {
@@ -402,7 +285,6 @@ function revealStartingArea() {
 }
 
 revealStartingArea();
-renderTechTree();
   /* ============================
   Tooltips
 ============================ */
@@ -441,7 +323,6 @@ function getMachineTooltip(machine) {
 
   return text;
 }
-  
  /* ============================
   Fonction pour calculer le coût dynamique
 ============================ */ 
@@ -506,48 +387,6 @@ function isAdjacentToRevealed(x, y) {
     }
   }
   return false;
-}
-
-/* ============================
-   ARBRE TECH
-============================ */
-
-
-  function renderTechTree() {
-  const div = document.getElementById("techList");
-  div.innerHTML = "";
-
-  technologies.forEach(tech => {
-    const btn = document.createElement("button");
-
-    let costText = Object.entries(tech.cost)
-      .map(([res, amt]) => `${resources[res].emoji}${amt}`)
-      .join(" ");
-
-    btn.textContent = `${tech.name} (${costText})`;
-
-    if (tech.unlocked) {
-      btn.classList.add("unlocked");
-      btn.textContent += " ✔️";
-      btn.disabled = true;
-    }
-
-    btn.onclick = () => {
-      if (!canAfford(tech.cost)) return;
-
-      payCost(tech.cost);
-      tech.unlocked = true;
-      if (tech.bonus === "factoryBoost") {
-  factoryBoost = 1.1; // ✔️ +10% de rendement
-}
-
-      renderTechTree();
-      renderMachines();
-      renderResources();
-    };
-
-    div.appendChild(btn);
-  });
 }
 
 /* ============================
@@ -620,10 +459,10 @@ function computeRatePerSecond(resourceId) {
       /* === Extracteur === */
       if (machine.id === "extractor") {
         if (resourceId === "water" && grid[y][x].natural === "water") {
-          rate += 2 * energyRatio * factoryBoost;
+          rate += 2 * energyRatio;
         }
         if (resourceId === "oil" && grid[y][x].natural === "oil") {
-          rate += 0.5 * energyRatio  * factoryBoost;
+          rate += 0.5 * energyRatio;
         }
       }
 
@@ -632,7 +471,7 @@ function computeRatePerSecond(resourceId) {
         const nat = grid[y][x].natural;
         const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
         if (valid.includes(nat) && nat === resourceId) {
-          rate += productionRates[nat] * energyRatio * factoryBoost;
+          rate += productionRates[nat] * energyRatio;
         }
       }
 
@@ -646,14 +485,14 @@ function computeRatePerSecond(resourceId) {
           }
         }
         if (canRun) {
-          rate += machine.produceRate * energyRatio * factoryBoost;
+          rate += machine.produceRate * energyRatio;
         }
       }
 
          /* === Machines simples === */
       else if (machine.produces === resourceId && !machine.consumes) {
         const rateBase = productionRates[machine.produces] || 0;
-        rate += rateBase * energyRatio * factoryBoost;
+        rate += rateBase * energyRatio;
       }
     }
   }
@@ -667,7 +506,7 @@ function computeRatePerSecond(resourceId) {
       const machine = machines.find(m => m.id === machineId);
 
       if (machine.consumes && machine.consumes[resourceId]) {
-        rate -= machine.consumes[resourceId] * energyRatio * factoryBoost;
+        rate -= machine.consumes[resourceId] * energyRatio;
       }
     }
   }
@@ -818,7 +657,7 @@ function renderGrid() {
 
   t.revealed = true;
   revealedCount++;
-  renderTechTree();
+
   renderResources();
   renderGrid();
   return;
@@ -828,40 +667,6 @@ function renderGrid() {
         placeMachine(x, y);
         renderGrid();
       };
-cell.onmouseenter = (e) => {
-  const tile = grid[y][x];
-  const tooltip = document.getElementById("tileTooltip");
-
-  // Si la case est déjà révélée → pas de tooltip
-  if (tile.revealed) {
-    tooltip.style.display = "none";
-    return;
-  }
-
-  // Si la case n'est pas adjacente → pas de tooltip
-  if (!isAdjacentToRevealed(x, y)) {
-    tooltip.style.display = "none";
-    return;
-  }
-
-  const cost = getRevealCost();
-
-  tooltip.textContent = `Révéler cette case coûte\n🪵 ${cost} bois`;
-  tooltip.style.display = "block";
-  tooltip.style.left = (e.pageX + 15) + "px";
-  tooltip.style.top = (e.pageY + 15) + "px";
-};
-
-cell.onmousemove = (e) => {
-  const tooltip = document.getElementById("tileTooltip");
-  tooltip.style.left = (e.pageX + 15) + "px";
-  tooltip.style.top = (e.pageY + 15) + "px";
-};
-
-cell.onmouseleave = () => {
-  const tooltip = document.getElementById("tileTooltip");
-  tooltip.style.display = "none";
-};
 
       cell.oncontextmenu = (e) => {
         e.preventDefault();
@@ -912,7 +717,7 @@ function placeMachine(x, y) {
   tile.machine = selectedMachine;
 
   revealAdjacent(x, y);
-  renderTechTree();
+
   renderGrid();
   renderResources();
 }
@@ -1037,9 +842,7 @@ function restartGame() {
   resources.wood.amount = 100;
   resources.iron.amount = 80;
   resources.stone.amount = 50;
-  resources.coal.amount = 10;
-  resources.robot.amount = 1000;
-    resources.fuel.amount = 1000;
+
   grid = generateNaturalMap().map(row =>
     row.map(natural => ({
       machine: null,
@@ -1047,8 +850,7 @@ function restartGame() {
       revealed: false
     }))
   );
-  technologies.forEach(t => t.unlocked = false);
-  renderTechTree();
+
   revealStartingArea();
   placeStartingResources();
   renderResources();
