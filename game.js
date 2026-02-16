@@ -891,9 +891,9 @@ function toggleOrientation() {
 /* ============================
    INIT
 ============================ */
-
-  generateGrid();
   renderGrid();
+  generateGrid();
+
   renderResources();
   renderMachines();
 
