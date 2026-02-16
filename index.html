@@ -73,8 +73,8 @@
   }
 
   .cell {
-    width: 26px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     background: #334155;
     display: flex;
     align-items: center;
@@ -207,7 +207,7 @@ const productionRates = {
  {
   id: "electronics",
   name: "Électronique avancée",
-  cost: { wood: 4, stone: 3 },
+  cost: { cable: 300 , glass: 200 },
   unlocked: false,
   bonus: "factoryBoost"   // ✔️ Ajout
 },
@@ -219,7 +219,7 @@ const productionRates = {
   },
   {
     id: "robotics",
-    name: "Robotique",
+    name: "Exploration terrestre",
     cost: { robot: 200, fuel: 80 },
     unlocked: false
   }
@@ -554,6 +554,19 @@ function revealStartingArea() {
 
 revealStartingArea();
 renderTechTree();
+
+  /* ============================
+reveler carte
+============================ */
+  function revealEntireMap() {
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      grid[y][x].revealed = true;
+    }
+  }
+  renderGrid();
+}
+
   /* ============================
   Tooltips
 ============================ */
@@ -690,6 +703,9 @@ function isAdjacentToRevealed(x, y) {
       tech.unlocked = true;
       if (tech.bonus === "factoryBoost") {
   factoryBoost = 1.1; // ✔️ +10% de rendement
+}
+if (tech.id === "robotics") {
+    revealEntireMap();
 }
 
       renderTechTree();
