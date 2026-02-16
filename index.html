@@ -992,10 +992,10 @@ function renderGrid() {
     for (let x = 0; x < gridWidth; x++) {
       const cell = document.createElement("div");
       cell.className = "cell";
+
+      const tile = grid[y][x];
 if (explorerRobot && explorerRobot.x === x && explorerRobot.y === y) {
   cell.textContent = "🤖";
-      const tile = grid[y][x];
-
       if (!tile.revealed) {
         cell.textContent = "⬛";
         cell.style.opacity = "0.4";
