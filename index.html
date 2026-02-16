@@ -553,8 +553,7 @@ function revealStartingArea() {
 }
 
 revealStartingArea();
-renderTechTree();
-
+<
   /* ============================
 reveler carte
 ============================ */
@@ -701,12 +700,13 @@ function isAdjacentToRevealed(x, y) {
 
       payCost(tech.cost);
       tech.unlocked = true;
+      if (tech.id === "robotics") {
+    revealEntireMap();
+}
       if (tech.bonus === "factoryBoost") {
   factoryBoost = 1.1; // ✔️ +10% de rendement
 }
-if (tech.id === "robotics") {
-    revealEntireMap();
-}
+
 
       renderTechTree();
       renderMachines();
