@@ -107,7 +107,7 @@
 </head>
 <body>
 <div id="tooltip" class="machine-tooltip"></div>
-
+<div id="tileTooltip" class="machine-tooltip"></div>
 <div class="header">
   <h1>Industrie & Énergie — V2</h1>
   <button onclick="restartGame()">🔄 Recommencer</button>
@@ -890,6 +890,40 @@ function renderGrid() {
         placeMachine(x, y);
         renderGrid();
       };
+cell.onmouseenter = (e) => {
+  const tile = grid[y][x];
+  const tooltip = document.getElementById("tileTooltip");
+
+  // Si la case est déjà révélée → pas de tooltip
+  if (tile.revealed) {
+    tooltip.style.display = "none";
+    return;
+  }
+
+  // Si la case n'est pas adjacente → pas de tooltip
+  if (!isAdjacentToRevealed(x, y)) {
+    tooltip.style.display = "none";
+    return;
+  }
+
+  const cost = getRevealCost();
+
+  tooltip.textContent = `Révéler cette case coûte\n🪵 ${cost} bois`;
+  tooltip.style.display = "block";
+  tooltip.style.left = (e.pageX + 15) + "px";
+  tooltip.style.top = (e.pageY + 15) + "px";
+};
+
+cell.onmousemove = (e) => {
+  const tooltip = document.getElementById("tileTooltip");
+  tooltip.style.left = (e.pageX + 15) + "px";
+  tooltip.style.top = (e.pageY + 15) + "px";
+};
+
+cell.onmouseleave = () => {
+  const tooltip = document.getElementById("tileTooltip");
+  tooltip.style.display = "none";
+};
 
       cell.oncontextmenu = (e) => {
         e.preventDefault();
