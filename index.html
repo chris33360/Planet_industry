@@ -987,13 +987,13 @@ btn.onmouseleave = () => {
 function renderGrid() {
   const div = document.getElementById("grid");
   div.innerHTML = "";
-if (explorerRobot && explorerRobot.x === x && explorerRobot.y === y) {
-  cell.textContent = "🤖";
+
   for (let y = 0; y < gridHeight; y++) {
     for (let x = 0; x < gridWidth; x++) {
       const cell = document.createElement("div");
       cell.className = "cell";
-
+if (explorerRobot && explorerRobot.x === x && explorerRobot.y === y) {
+  cell.textContent = "🤖";
       const tile = grid[y][x];
 
       if (!tile.revealed) {
