@@ -31,7 +31,7 @@
 
   .panel {
     background: #1e293b;
-    padding: 15px;
+    padding: 6px;
     border-radius: 8px;
     min-width: 260px;
     box-shadow: 0 0 0 1px #334155;
@@ -61,7 +61,8 @@
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(43, 23px);
+    grid-template-columns: repeat(43, 28px);
+    grid-template-rows: repeat(23, 28px);
     gap: 3px;
     margin-top: 5px;
   }
