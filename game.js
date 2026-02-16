@@ -907,36 +907,6 @@ function restartGame() {
   renderGrid();
 }
 
-/* ============================
-   ROTATION 90°
-============================ */
-
-function toggleOrientation() {
-  const oldWidth = gridWidth;
-  const oldHeight = gridHeight;
-
-  gridWidth = oldHeight;
-  gridHeight = oldWidth;
-
-  const newGrid = Array.from({ length: gridHeight }, () =>
-    Array.from({ length: gridWidth }, () => null)
-  );
-
-  for (let y = 0; y < oldHeight; y++) {
-    for (let x = 0; x < oldWidth; x++) {
-      const newX = y;
-      const newY = oldWidth - 1 - x;
-      newGrid[newY][newX] = grid[y][x];
-    }
-  }
-
-  grid = newGrid;
-
-  document.querySelector(".grid").style.gridTemplateColumns =
-    `repeat(${gridWidth}, 32px)`;
-
-  renderGrid();
-}
 
 /* ============================
    INIT
