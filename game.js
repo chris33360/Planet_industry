@@ -221,8 +221,8 @@ let selectedMachine = null;
    DIMENSIONS
 ============================ */
 
-let gridWidth = 50;
-let gridHeight = 25;
+let gridWidth = 43;
+let gridHeight = 23;
 
 /* ============================
    GÉNÉRATION NATURELLE
