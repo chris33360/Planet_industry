@@ -975,7 +975,7 @@ function renderGrid() {
 
   t.revealed = true;
   revealedCount++;
-
+  renderTechTree();
   renderResources();
   renderGrid();
   return;
@@ -1069,7 +1069,7 @@ function placeMachine(x, y) {
   tile.machine = selectedMachine;
 
   revealAdjacent(x, y);
-
+  renderTechTree();
   renderGrid();
   renderResources();
 }
