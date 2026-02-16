@@ -702,8 +702,14 @@ btn.onclick = () => {
     payCost(tech.cost);
     tech.unlocked = true;
 
-    if (tech.id === "robotics") {
+    if (tech.id === "battery_tech") {
         revealEntireMap();console.log("Robotique débloquée → révélation !");
+   if (tech.bonus === "factoryBoost") {
+        factoryBoost = 1.1;
+    } 
+      if (tech.bonus === "factoryBoost") {
+        factoryBoost = 1.1;
+    }
 
     }
 
