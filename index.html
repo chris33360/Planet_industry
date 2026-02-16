@@ -102,6 +102,23 @@
   z-index: 1000;
   display: none;
 }
+#tech-tree {
+  max-height: 400px;
+  overflow-y: auto;
+}
+#tech-tree button {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #e2e8f0;
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+#tech-tree button.unlocked {
+  border-color: #16a34a;
+  color: #16a34a;
+}
 
 </style>
 </head>
@@ -124,6 +141,11 @@
     <h2>Machines</h2>
     <div id="machines"></div>
   </div>
+  <div class="panel" id="tech-tree">
+  <h2>Arbre technologique</h2>
+  <div id="techList"></div>
+</div>
+
 </div>
 
 <div class="panel">
@@ -135,6 +157,8 @@
    RESSOURCES
 ============================ */
 let revealedCount = 0;
+let factoryBoost = 1; // 1 = normal, 1.1 = +10%
+
 const revealCost = 2;
 const resources = {
   wood:      { name: "Bois", emoji: "🪵", amount: 100 },
@@ -175,6 +199,35 @@ const productionRates = {
   uranium: 0.2,
   iron: 0.8
 };
+
+/* ============================
+   MACHINES
+============================ */
+
+  const technologies = [
+ {
+  id: "electronics",
+  name: "Électronique avancée",
+  cost: { aluminum: 400, copper: 300 },
+  unlocks: ["circuit_factory"],
+  unlocked: false,
+  bonus: "factoryBoost"   // ✔️ Ajout
+},
+  {
+    id: "battery_tech",
+    name: "Technologie des batteries",
+    cost: { aluminum: 50, copper: 40 },
+    unlocks: ["battery_factory"],
+    unlocked: false
+  },
+  {
+    id: "robotics",
+    name: "Robotique",
+    cost: { cable: 200, aluminum: 80 },
+    unlocks: ["robot_factory"],
+    unlocked: false
+  }
+];
 
 /* ============================
    MACHINES
@@ -613,6 +666,48 @@ function isAdjacentToRevealed(x, y) {
 }
 
 /* ============================
+   ARBRE TECH
+============================ */
+
+
+  function renderTechTree() {
+  const div = document.getElementById("techList");
+  div.innerHTML = "";
+
+  technologies.forEach(tech => {
+    const btn = document.createElement("button");
+
+    let costText = Object.entries(tech.cost)
+      .map(([res, amt]) => `${resources[res].emoji}${amt}`)
+      .join(" ");
+
+    btn.textContent = `${tech.name} (${costText})`;
+
+    if (tech.unlocked) {
+      btn.classList.add("unlocked");
+      btn.textContent += " ✔️";
+      btn.disabled = true;
+    }
+
+    btn.onclick = () => {
+      if (!canAfford(tech.cost)) return;
+
+      payCost(tech.cost);
+      tech.unlocked = true;
+      if (tech.bonus === "factoryBoost") {
+  factoryBoost = 1.1; // ✔️ +10% de rendement
+}
+
+      renderTechTree();
+      renderMachines();
+      renderResources();
+    };
+
+    div.appendChild(btn);
+  });
+}
+
+/* ============================
    RENDU UI
 ============================ */
 
@@ -682,10 +777,10 @@ function computeRatePerSecond(resourceId) {
       /* === Extracteur === */
       if (machine.id === "extractor") {
         if (resourceId === "water" && grid[y][x].natural === "water") {
-          rate += 2 * energyRatio;
+          rate += 2 * energyRatio * factoryBoost;
         }
         if (resourceId === "oil" && grid[y][x].natural === "oil") {
-          rate += 0.5 * energyRatio;
+          rate += 0.5 * energyRatio  * factoryBoost;
         }
       }
 
@@ -694,7 +789,7 @@ function computeRatePerSecond(resourceId) {
         const nat = grid[y][x].natural;
         const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
         if (valid.includes(nat) && nat === resourceId) {
-          rate += productionRates[nat] * energyRatio;
+          rate += productionRates[nat] * energyRatio * factoryBoost;
         }
       }
 
@@ -708,14 +803,14 @@ function computeRatePerSecond(resourceId) {
           }
         }
         if (canRun) {
-          rate += machine.produceRate * energyRatio;
+          rate += machine.produceRate * energyRatio * factoryBoost;
         }
       }
 
          /* === Machines simples === */
       else if (machine.produces === resourceId && !machine.consumes) {
         const rateBase = productionRates[machine.produces] || 0;
-        rate += rateBase * energyRatio;
+        rate += rateBase * energyRatio * factoryBoost;
       }
     }
   }
@@ -729,7 +824,7 @@ function computeRatePerSecond(resourceId) {
       const machine = machines.find(m => m.id === machineId);
 
       if (machine.consumes && machine.consumes[resourceId]) {
-        rate -= machine.consumes[resourceId] * energyRatio;
+        rate -= machine.consumes[resourceId] * energyRatio * factoryBoost;
       }
     }
   }
