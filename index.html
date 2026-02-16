@@ -1190,10 +1190,14 @@ setInterval(autoProductionTick, 1000);
 ============================ */
 
 function restartGame() {
+  technologies.forEach(t => t.unlocked = false);
+renderTechTree();
+
   Object.keys(resources).forEach(r => resources[r].amount = 0);
   resources.wood.amount = 100;
   resources.iron.amount = 80;
   resources.stone.amount = 50;
+  resources.coal.amount = 10;
 
   grid = generateNaturalMap().map(row =>
     row.map(natural => ({
@@ -1206,6 +1210,8 @@ function restartGame() {
   revealStartingArea();
   placeStartingResources();
   renderResources();
+  renderTechTree();
+
   renderGrid();
 }
 
