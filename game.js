@@ -892,9 +892,13 @@ function toggleOrientation() {
 /* ============================
    INIT
 ============================ */
+function init() {
+  generateGrid();
+  renderGrid();
+  renderResources();
+  renderMachines();
+  // etc.
+}
 
-renderResources();
-renderMachines();
-renderGrid();
-
+init();
 </script>
