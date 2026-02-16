@@ -165,7 +165,6 @@ const resources = {
   coal:      { name: "Charbon", emoji: "⚫", amount: 10 },
   oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
   aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
-  water:     { name: "Eau", emoji: "💧", amount: 0 },
   uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
   crystal:   { name: "Cristal", emoji: "💎", amount: 0 },
   glass:     { name: "Verre", emoji: "🧊", amount: 0 },
@@ -186,7 +185,6 @@ battery: { name: "Batterie", emoji: "🔋", amount: 0 },
 ============================ */
 
 const productionRates = {
-  water: 2,
   oil: 0.5,
   wood: 2,
   stone: 1.5,
@@ -241,7 +239,7 @@ const machines = [
     id: "extractor",
     name: "Extracteur",
     emoji: "💧",
-    needs: ["water", "oil"],
+    needs: ["oil"],
     cost: { aluminum: 30, iron: 20 },
     power: 1.2
   },
@@ -413,21 +411,19 @@ const weights = {
   stone: 0.04,
   copper: 0.03,
   oil: 0.03,
-  water: 0.05,
   aluminum: 0.02,
   crystal: 0.01,
   uranium: 0.006
 };
 
-const clusterResources = ["forest", "iron", "stone", "copper", "water"];
+const clusterResources = ["forest", "iron", "stone", "copper"];
 const isolatedResources = ["aluminum", "crystal", "uranium"];
 
 const clusterCount = {
   forest: 7,
   iron: 4,
   stone: 4,
-  copper: 3,
-  water: 3
+  copper: 3
 };
 
 const spreadChance = 0.30;
@@ -478,7 +474,7 @@ function generateNaturalMap() {
     }
   }
 
-  const isolatedCommon = ["iron", "copper", "water", "aluminum", "forest"];
+  const isolatedCommon = ["iron", "copper", "aluminum", "forest"];
 
   for (const res of isolatedCommon) {
     const extra = Math.floor((gridWidth * gridHeight) * 0.002);
@@ -521,8 +517,7 @@ const resourceEmojis = {
   aluminum: "🧪",
   crystal: "💎",
   uranium: "☢️",
-  oil: "🛢️",
-  water: "💧"
+  oil: "🛢️"
 };
 
 /* ============================
@@ -771,9 +766,6 @@ function computeRatePerSecond(resourceId) {
 
       /* === Extracteur === */
       if (machine.id === "extractor") {
-        if (resourceId === "water" && grid[y][x].natural === "water") {
-          rate += 2 * energyRatio * factoryBoost;
-        }
         if (resourceId === "oil" && grid[y][x].natural === "oil") {
           rate += 0.5 * energyRatio  * factoryBoost;
         }
@@ -1133,7 +1125,6 @@ function autoProductionTick() {
 
       /* === Extracteur === */
       if (machine.id === "extractor") {
-        if (grid[y][x].natural === "water") resources.water.amount += 2 * energyRatio;
         if (grid[y][x].natural === "oil") resources.oil.amount += 0.5 * energyRatio;
       }
 
