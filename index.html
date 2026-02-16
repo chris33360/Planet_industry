@@ -696,22 +696,26 @@ function isAdjacentToRevealed(x, y) {
       btn.disabled = true;
     }
 
-    btn.onclick = () => {
-      if (!canAfford(tech.cost)) return;
+btn.onclick = () => {
+    if (!canAfford(tech.cost)) return;
 
-      payCost(tech.cost);
-      tech.unlocked = true;
-      if (tech.bonus === "factoryBoost") {
-  factoryBoost = 1.1; // ✔️ +10% de rendement
-}
-if (tech.id === "robotics") {
-    revealEntireMap();
-}
+    payCost(tech.cost);
+    tech.unlocked = true;
 
-      renderTechTree();
-      renderMachines();
-      renderResources();
-    };
+    if (tech.id === "robotics") {
+        revealEntireMap();console.log("Robotique débloquée → révélation !");
+
+    }
+
+    if (tech.bonus === "factoryBoost") {
+        factoryBoost = 1.1;
+    }
+
+    renderTechTree();
+    renderMachines();
+    renderResources();
+};
+
 
     div.appendChild(btn);
   });
