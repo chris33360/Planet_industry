@@ -209,7 +209,6 @@ const productionRates = {
   id: "electronics",
   name: "Électronique avancée",
   cost: { aluminum: 400, copper: 300 },
-  unlocks: ["circuit_factory"],
   unlocked: false,
   bonus: "factoryBoost"   // ✔️ Ajout
 },
@@ -217,14 +216,12 @@ const productionRates = {
     id: "battery_tech",
     name: "Technologie des batteries",
     cost: { aluminum: 50, copper: 40 },
-    unlocks: ["battery_factory"],
     unlocked: false
   },
   {
     id: "robotics",
     name: "Robotique",
-    cost: { cable: 200, aluminum: 80 },
-    unlocks: ["robot_factory"],
+    cost: { robto: 200, fuel: 80 },
     unlocked: false
   }
 ];
@@ -1196,7 +1193,8 @@ function restartGame() {
   resources.iron.amount = 80;
   resources.stone.amount = 50;
   resources.coal.amount = 10;
-
+  resources.robot.amount = 1000;
+    resources.fuel.amount = 1000;
   grid = generateNaturalMap().map(row =>
     row.map(natural => ({
       machine: null,
