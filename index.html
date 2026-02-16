@@ -155,7 +155,7 @@
 ============================ */
 let revealedCount = 0;
 let factoryBoost = 1; // 1 = normal, 1.1 = +10%
-
+let explorerRobot = null;
 const revealCost = 2;
 const resources = {
   wood:      { name: "Bois", emoji: "🪵", amount: 100 },
@@ -689,6 +689,10 @@ function isAdjacentToRevealed(x, y) {
 
       payCost(tech.cost);
       tech.unlocked = true;
+      if (tech.id === "robotics") {
+  spawnExplorerRobot();
+}
+
       if (tech.bonus === "factoryBoost") {
   factoryBoost = 1.1; // ✔️ +10% de rendement
 }
@@ -701,6 +705,57 @@ function isAdjacentToRevealed(x, y) {
     div.appendChild(btn);
   });
 }
+
+
+
+/* ============================
+  ROBOT EXPLO
+============================ */
+  function spawnExplorerRobot() {
+  // Trouver une case révélée pour le spawn
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      if (grid[y][x].revealed) {
+        explorerRobot = { x, y };
+        return;
+      }
+    }
+  }
+}
+setInterval(() => {
+  if (!explorerRobot) return;
+
+  const { x, y } = explorerRobot;
+
+  const dirs = [
+    { dx: 1, dy: 0 },
+    { dx: -1, dy: 0 },
+    { dx: 0, dy: 1 },
+    { dx: 0, dy: -1 }
+  ];
+
+  // Mélanger les directions pour un comportement naturel
+  dirs.sort(() => Math.random() - 0.5);
+
+  for (const d of dirs) {
+    const nx = x + d.dx;
+    const ny = y + d.dy;
+
+    if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) continue;
+
+    const tile = grid[ny][nx];
+
+    // Si la case n'est pas révélée → le robot la révèle gratuitement
+    if (!tile.revealed) {
+      tile.revealed = true;
+      explorerRobot.x = nx;
+      explorerRobot.y = ny;
+      renderGrid();
+      return;
+    }
+  }
+
+}, 800); // robot explore toutes les 0.8 secondes
 
 /* ============================
    RENDU UI
@@ -952,6 +1007,9 @@ function renderGrid() {
           cell.textContent = m.emoji;
         }
       }
+if (explorerRobot && explorerRobot.x === x && explorerRobot.y === y) {
+  cell.textContent = "🤖";
+}
 
       cell.onclick = () => {
         const t = grid[y][x];
