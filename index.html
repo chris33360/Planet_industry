@@ -208,22 +208,20 @@ const productionRates = {
  {
   id: "electronics",
   name: "Électronique avancée",
-  cost: { aluminum: 400, copper: 300 },
-  unlocks: ["circuit_factory"],
+  cost: { aluminum: 400, copper: 300 }
   unlocked: false,
   bonus: "factoryBoost"   // ✔️ Ajout
 },
   {
     id: "battery_tech",
-    name: "Technologie des batteries",
-    cost: { aluminum: 50, copper: 40 },
-    unlocks: ["battery_factory"],
+    name: "Stockage d'énergie",
+    cost: {glass: 400, battery: 150},
     unlocked: false
   },
   {
     id: "robotics",
-    name: "Robotique",
-    cost: { cable: 200, aluminum: 80 },
+    name: "Exploration Robotique",
+    cost: { robot: 300, fuel: 300 },
     unlocks: ["robot_factory"],
     unlocked: false
   }
