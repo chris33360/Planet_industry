@@ -994,8 +994,6 @@ function renderGrid() {
       cell.className = "cell";
 
       const tile = grid[y][x];
-if (explorerRobot && explorerRobot.x === x && explorerRobot.y === y) {
-  cell.textContent = "🤖";
       if (!tile.revealed) {
         cell.textContent = "⬛";
         cell.style.opacity = "0.4";
