@@ -219,7 +219,8 @@ const machines = [
   name: "Laboratoire",
   emoji: "🔬",
    needs: "none",
-  produces: { science: 1 }, // 1 science / seconde
+  produces: "science", // 1 science / seconde
+  produceRate: 1,
   consumes: {
     wood: 1,
     iron: 1,
