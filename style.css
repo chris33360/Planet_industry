@@ -64,14 +64,14 @@
 
 /* Titre plus compact */
 .tech-title {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: bold;
   margin-bottom: 4px;
 }
 
 /* Description + coût */
 .tech-desc {
-  font-size: 13px;
+  font-size: 12px;
   opacity: 0.85;
   margin-bottom: 4px;
 }
@@ -90,7 +90,7 @@
   border-radius: 4px;
   color: #e2e8f0;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .tech-card button:hover {
