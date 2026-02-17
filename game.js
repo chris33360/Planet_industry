@@ -1002,7 +1002,7 @@ function autoProductionTick() {
 
       /* === Extracteur === */
       if (machine.id === "extractor") {
-        if (grid[y][x].natural === "oil") resources.oil.amount += 0.5 * energyRatio;
+        if (grid[y][x].natural === "oil") resources.oil.amount += 0.5 * energyRatio * factoryBoost;
       }
 
       /* === Foreuse === */
@@ -1010,7 +1010,7 @@ function autoProductionTick() {
         const nat = grid[y][x].natural;
         const valid = ["iron", "stone", "copper", "aluminum", "crystal", "uranium"];
         if (valid.includes(nat)) {
-          resources[nat].amount += productionRates[nat] * energyRatio;
+          resources[nat].amount += productionRates[nat] * energyRatio * factoryBoost;
         }
       }
 
@@ -1028,16 +1028,16 @@ function autoProductionTick() {
         if (!canRun) continue;
 
         for (const [res, amount] of Object.entries(machine.consumes)) {
-          resources[res].amount -= amount * energyRatio;
+          resources[res].amount -= amount * energyRatio * factoryBoost;
         }
 
-        resources[machine.produces].amount += machine.produceRate * energyRatio;
+        resources[machine.produces].amount += machine.produceRate * energyRatio * factoryBoost;
       }
 
       /* === Machines simples === */
       else if (machine.produces) {
         const rate = productionRates[machine.produces] || 0;
-        resources[machine.produces].amount += rate * energyRatio;
+        resources[machine.produces].amount += rate * energyRatio * factoryBoost;
       }
     }
   }
