@@ -9,7 +9,7 @@ const resources = {
      iron:      { name: "Fer", emoji: "🔘", amount: 80 },
      stone:     { name: "Pierre", emoji: "🪨", amount: 50 },
      copper:    { name: "Cuivre", emoji: "🟠", amount: 0 },
-     coal:      { name: "Charbon", emoji: "⚫", amount: 0 },
+     coal:      { name: "Charbon", emoji: "⚫", amount: 10 },
      oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
      aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
      uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
@@ -23,7 +23,7 @@ const resources = {
    robot: { name: "Robot", emoji: "🤖", amount: 0 },
    battery: { name: "Batterie", emoji: "🔋", amount: 0 },
    science: { name: "Science", emoji: "🔬", amount: 0 },
-   energy:    { name: "Énergie", emoji: "⚡", amount: 50 } // non stockable
+   energy:    { name: "Énergie", emoji: "⚡", amount: 0 } // non stockable
   
 };
 
@@ -1057,7 +1057,7 @@ function restartGame() {
   resources.wood.amount = 100;
   resources.iron.amount = 80;
   resources.stone.amount = 50;
-  resources.energy.amount = 10;
+  resources.coal.amount = 10;
   grid = generateNaturalMap().map(row =>
     row.map(natural => ({
       machine: null,
