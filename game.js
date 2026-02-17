@@ -997,7 +997,7 @@ function restartGame() {
       revealed: false
     }))
   );
-
+renderTechTree();
   revealStartingArea();
   placeStartingResources();
   renderResources();
@@ -1011,4 +1011,5 @@ function restartGame() {
   renderGrid();
   renderResources();
   renderMachines();
+renderTechTree();
 
