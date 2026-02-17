@@ -299,7 +299,7 @@ const techs = [
   desc: "Production + 500 %",
   cost: {
     uranium: 100,
-    robots: 30
+    robot: 30
   },
   effect: () => {
        // Bonus X5 appliqué à la centrale nucléaire
