@@ -223,6 +223,92 @@ let selectedMachine = null;
 
 let gridWidth = 43;
 let gridHeight = 23;
+/* ============================
+  TECH
+============================ */
+
+const techs = [
+  {
+    id: "boost10",
+    name: "Optimisation I",
+    desc: "+10% de production",
+    cost: { wood: 50 },
+    effect: () => { factoryBoost *= 1.10; }
+  },
+  {
+    id: "boost20",
+    name: "Optimisation II",
+    desc: "+20% de production",
+    cost: { wood: 120 },
+    requires: "boost10",
+    effect: () => { factoryBoost *= 1.20; }
+  },
+  {
+    id: "revealAll",
+    name: "Cartographie avancée",
+    desc: "Révèle toute la carte",
+    cost: { wood: 200 },
+    requires: "boost20",
+    effect: () => {
+      for (let y = 0; y < gridHeight; y++) {
+        for (let x = 0; x < gridWidth; x++) {
+          grid[y][x].revealed = true;
+        }
+      }
+      renderGrid();
+    }
+  }
+];
+
+
+let unlockedTechs = new Set();
+
+function renderTechTree() {
+  const div = document.getElementById("techList");
+  div.innerHTML = "";
+
+  techs.forEach(t => {
+    const btn = document.createElement("button");
+    btn.textContent = `${t.name} (${t.desc})`;
+
+    // Déjà débloqué
+    if (unlockedTechs.has(t.id)) {
+      btn.disabled = true;
+      btn.textContent += " ✔";
+    }
+
+    // Prérequis non débloqué
+    if (t.requires && !unlockedTechs.has(t.requires)) {
+      btn.disabled = true;
+    }
+
+    btn.onclick = () => unlockTech(t);
+    div.appendChild(btn);
+  });
+}
+function unlockTech(tech) {
+  // Vérifier le coût
+  for (let r in tech.cost) {
+    if (resources[r].amount < tech.cost[r]) {
+      console.log("Pas assez de ressources");
+      return;
+    }
+  }
+
+  // Payer
+  for (let r in tech.cost) {
+    resources[r].amount -= tech.cost[r];
+  }
+
+  // Appliquer l'effet
+  tech.effect();
+
+  // Marquer comme débloqué
+  unlockedTechs.add(tech.id);
+
+  renderResources();
+  renderTechTree();
+}
 
 /* ============================
    GÉNÉRATION NATURELLE
