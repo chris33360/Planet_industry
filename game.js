@@ -1,7 +1,7 @@
 /* ============================
    RESSOURCES
 ============================ */
-let revealedCount = 0;
+let revealedCount = 1;
 let factoryBoost = 1; // 1 = normal, 1.1 = +10%
 const revealCost = 2;
 const resources = {
