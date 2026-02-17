@@ -734,6 +734,17 @@ function renderGrid() {
 /* ============================
    PLACEMENT / SUPPRESSION
 ============================ */
+function isAdjacentToRevealed(x, y) {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= gridWidth || ny >= gridHeight) continue;
+      if (grid[ny][nx].revealed) return true;
+    }
+  }
+  return false;
+}
 
 function canAfford(cost) {
   if (!cost) return true;
