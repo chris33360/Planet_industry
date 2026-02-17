@@ -81,26 +81,28 @@
   opacity: 0.7;
   margin-bottom: 8px;
 }
-
-/* Bouton plus petit */
-.tech-card button {
-  padding: 5px 8px;
+.tech-title-button {
   background: #475569;
-  border: none;
-  border-radius: 4px;
   color: #e2e8f0;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
-  font-size: 12px;
+  width: 100%;
+  transition: 0.2s;
 }
 
-.tech-card button:hover {
+.tech-title-button:hover {
   background: #64748b;
 }
 
-.tech-card button:disabled {
+.tech-title-button:disabled {
   opacity: 0.4;
   cursor: default;
 }
+
 
 /* Flèche plus fine */
 .tech-arrow {
