@@ -47,43 +47,50 @@
 .tech-column {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
-/* Carte technologique */
+/* Carte plus petite */
 .tech-card {
   background: #1e293b;
-  border: 2px solid #334155;
-  padding: 12px;
-  border-radius: 8px;
-  position: relative;
+  border: 1px solid #334155;
+  padding: 8px;
+  border-radius: 6px;
+  width: 180px; /* plus petit */
   text-align: center;
   color: #e2e8f0;
+  margin: 0 auto;
 }
 
-/* Titre */
+/* Titre plus compact */
 .tech-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: bold;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
-/* Description */
+/* Description + coût */
 .tech-desc {
-  font-size: 14px;
-  opacity: 0.8;
-  margin-bottom: 10px;
+  font-size: 13px;
+  opacity: 0.85;
+  margin-bottom: 4px;
 }
 
-/* Bouton */
+.tech-cost {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+/* Bouton plus petit */
 .tech-card button {
-  padding: 8px 12px;
+  padding: 5px 8px;
   background: #475569;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   color: #e2e8f0;
   cursor: pointer;
-  transition: 0.2s;
+  font-size: 13px;
 }
 
 .tech-card button:hover {
@@ -95,12 +102,13 @@
   cursor: default;
 }
 
-/* Flèche entre les cartes */
+/* Flèche plus fine */
 .tech-arrow {
   text-align: center;
-  font-size: 24px;
+  font-size: 18px;
   color: #94a3b8;
 }
+
 
   #machines button {
     background: #1e293b;
