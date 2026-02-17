@@ -267,14 +267,25 @@ function renderTechTree() {
   const div = document.getElementById("techList");
   div.innerHTML = "";
 
-  techs.forEach(t => {
+  techs.forEach((t, index) => {
+    const card = document.createElement("div");
+    card.className = "tech-card";
+
+    const title = document.createElement("div");
+    title.className = "tech-title";
+    title.textContent = t.name;
+
+    const desc = document.createElement("div");
+    desc.className = "tech-desc";
+    desc.textContent = t.desc;
+
     const btn = document.createElement("button");
-    btn.textContent = `${t.name} (${t.desc})`;
+    btn.textContent = "Débloquer";
 
     // Déjà débloqué
     if (unlockedTechs.has(t.id)) {
       btn.disabled = true;
-      btn.textContent += " ✔";
+      btn.textContent = "Débloqué ✔";
     }
 
     // Prérequis non débloqué
@@ -283,9 +294,23 @@ function renderTechTree() {
     }
 
     btn.onclick = () => unlockTech(t);
-    div.appendChild(btn);
+
+    card.appendChild(title);
+    card.appendChild(desc);
+    card.appendChild(btn);
+
+    div.appendChild(card);
+
+    // Ajouter une flèche entre les cartes
+    if (index < techs.length - 1) {
+      const arrow = document.createElement("div");
+      arrow.className = "tech-arrow";
+      arrow.textContent = "↓";
+      div.appendChild(arrow);
+    }
   });
 }
+
 function unlockTech(tech) {
   // Vérifier le coût
   for (let r in tech.cost) {
