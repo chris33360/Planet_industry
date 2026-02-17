@@ -214,8 +214,8 @@ const machines = [
   cost: {
     cable: 100,
     glass: 100,
-    robots: 50,
-    motors: 10
+    robot: 50,
+    engine: 10
   }
 },
 {
@@ -236,7 +236,7 @@ const machines = [
   },
   cost: {
     aluminum: 200,
-    circuits: 50
+    circuit: 50
   }
 }
 
