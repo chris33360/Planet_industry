@@ -23,7 +23,7 @@ const resources = {
    robot: { name: "Robot", emoji: "🤖", amount: 0 },
    battery: { name: "Batterie", emoji: "🔋", amount: 0 },
    science: { name: "Science", emoji: "🔬", amount: 0 },
-   energy:    { name: "Énergie", emoji: "⚡", amount: 0 } // non stockable
+   energy:    { name: "Énergie", emoji: "⚡", amount: 50 } // non stockable
   
 };
 
