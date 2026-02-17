@@ -9,7 +9,7 @@ const resources = {
      iron:      { name: "Fer", emoji: "🔘", amount: 80 },
      stone:     { name: "Pierre", emoji: "🪨", amount: 50 },
      copper:    { name: "Cuivre", emoji: "🟠", amount: 0 },
-     coal:      { name: "Charbon", emoji: "⚫", amount: 10 },
+     coal:      { name: "Charbon", emoji: "⚫", amount: 0 },
      oil:       { name: "Pétrole", emoji: "🛢️", amount: 0 },
      aluminum:  { name: "Aluminium", emoji: "🧪", amount: 0 },
      uranium:   { name: "Uranium", emoji: "☢️", amount: 0 },
