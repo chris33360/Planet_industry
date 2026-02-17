@@ -22,6 +22,7 @@ const resources = {
      engine: { name: "Moteur", emoji: "⚙️", amount: 0 },
    robot: { name: "Robot", emoji: "🤖", amount: 0 },
    battery: { name: "Batterie", emoji: "🔋", amount: 0 },
+   science: { name: "Science", emoji: "🧪", amount: 0 },
    energy:    { name: "Énergie", emoji: "⚡", amount: 0 } // non stockable
   
 };
@@ -212,7 +213,43 @@ const machines = [
     produces: "energy",
     cost: { aluminum: 100, glass: 20, stone: 20 },
     power: 0
+  },{
+  id: "nuclearPlant",
+  name: "Centrale nucléaire",
+  emoji: "☢️",
+  produces: {
+    energy: 6 // énergie par seconde
+  },
+  consumes: {
+    uranium: 0.4 // uranium par seconde
+  },
+  cost: {
+    cable: 100,
+    glass: 100,
+    robots: 50,
+    motors: 10
   }
+}
+,{
+  id: "lab",
+  name: "Laboratoire",
+  emoji: "🔬",
+  produces: { science: 1 }, // 1 science / seconde
+  consumes: {
+    wood: 1,
+    iron: 1,
+    stone: 1,
+    copper: 1,
+    crystal: 1,
+    aluminum: 1,
+    energy: 3
+  },
+  cost: {
+    aluminum: 200,
+    circuits: 50
+  }
+}
+
 ];
 
 let selectedMachine = null;
@@ -264,7 +301,26 @@ const techs = [
     cost: { engine: 200 },
     requires: "boost10",
     effect: () => { factoryBoost *= 1.20; }
+  },{
+  id: "nuclearTech",
+  name: "Technologie nucléaire",
+  desc: "Production + 500 %",
+  cost: {
+    uranium: 100,
+    robots: 30
+  },
+  effect: () => {
+    unlockedMachines.add("nuclearPlant");
+
+    // Bonus X5 appliqué à la centrale nucléaire
+    const nuclear = machines.find(m => m.id === "nuclearPlant");
+    if (nuclear) {
+      nuclear.produces.energy *= 5;
+    }
   }
+}
+
+
 ];
 
 
