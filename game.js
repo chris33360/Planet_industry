@@ -585,7 +585,7 @@ function getMachineTooltip(machine) {
   Fonction pour calculer le coût dynamique
 ============================ */ 
 function getRevealCost() {
-  return Math.ceil(revealCost * Math.pow(1.2, revealedCount));
+  return Math.ceil(revealCost * Math.pow(1.1, revealedCount));
 }
 
 /* ============================
