@@ -301,24 +301,7 @@ const techs = [
     cost: { engine: 200 },
     requires: "boost10",
     effect: () => { factoryBoost *= 1.20; }
-  },{
-  id: "nuclearTech",
-  name: "Technologie nucléaire",
-  desc: "Production + 500 %",
-  cost: {
-    uranium: 100,
-    robots: 30
-  },
-  effect: () => {
-    unlockedMachines.add("nuclearPlant");
-
-    // Bonus X5 appliqué à la centrale nucléaire
-    const nuclear = machines.find(m => m.id === "nuclearPlant");
-    if (nuclear) {
-      nuclear.produces.energy *= 5;
-    }
   }
-}
 
 
 ];
