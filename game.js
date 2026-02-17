@@ -1057,7 +1057,7 @@ function restartGame() {
   resources.wood.amount = 100;
   resources.iron.amount = 80;
   resources.stone.amount = 50;
-  resources.coal.amount = 10;
+  resources.energy.amount = 10;
   grid = generateNaturalMap().map(row =>
     row.map(natural => ({
       machine: null,
