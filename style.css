@@ -24,6 +24,7 @@
   }
 
   .top-panels {
+    font-size: 14px;
     display: flex;
     gap: 20px;
     margin-bottom: 10px;
