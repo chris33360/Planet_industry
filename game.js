@@ -217,12 +217,10 @@ const machines = [
   id: "nuclearPlant",
   name: "Centrale nucléaire",
   emoji: "☢️",
-  produces: {
-    energy: 6 // énergie par seconde
-  },
-  consumes: {
-    uranium: 0.4 // uranium par seconde
-  },
+  needs: "none",
+  produces: "energy",
+  produceRate: 0.6,
+  consumes: {uranium: 0.4},
   cost: {
     cable: 100,
     glass: 100,
@@ -234,6 +232,7 @@ const machines = [
   id: "lab",
   name: "Laboratoire",
   emoji: "🔬",
+   needs: "none",
   produces: { science: 1 }, // 1 science / seconde
   consumes: {
     wood: 1,
