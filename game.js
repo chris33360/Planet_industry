@@ -138,7 +138,7 @@ const machines = [
   name: "Raffinerie",
   emoji: "🏭",
   needs: "none",
-  consumes: { oil: 2 },
+  consumes: { oil: 2, plastic: 1},
   produces: "fuel",
   produceRate: 3,
   cost: { iron: 120, aluminum: 100 },
@@ -231,23 +231,23 @@ const techs = [
   {
     id: "boost10",
     name: "Optimisation I",
-    desc: "+10% de production",
-    cost: { wood: 50 },
+    desc: "Production + 10%",
+    cost: { wood: 500 },
     effect: () => { factoryBoost *= 1.10; }
   },
   {
     id: "boost20",
     name: "Optimisation II",
-    desc: "+20% de production",
-    cost: { wood: 120 },
+    desc: "Production + 20%",
+    cost: { fuel: 200 },
     requires: "boost10",
     effect: () => { factoryBoost *= 1.20; }
   },
   {
     id: "revealAll",
-    name: "Cartographie avancée",
-    desc: "Révèle toute la carte",
-    cost: { wood: 200 },
+    name: "Exploration robotique",
+    desc: "Révèle la carte",
+    cost: { robot: 200 },
     requires: "boost20",
     effect: () => {
       for (let y = 0; y < gridHeight; y++) {
@@ -257,6 +257,13 @@ const techs = [
       }
       renderGrid();
     }
+  },{
+    id: "boost30",
+    name: "Optimisation III",
+    desc: "Production + 30%",
+    cost: { engine: 200 },
+    requires: "boost10",
+    effect: () => { factoryBoost *= 1.20; }
   }
 ];
 
