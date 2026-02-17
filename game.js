@@ -214,6 +214,21 @@ const machines = [
     cost: { aluminum: 100, glass: 20, stone: 20 },
     power: 0
   },
+   {
+  id: "nuclearPlant",
+  name: "Centrale nucléaire",
+  emoji: "☢️",
+  needs: "none",
+  produces: "energy",
+  produceRate: 0.6,
+  consumes: {uranium: 0.4},
+  cost: {
+    cable: 100,
+    glass: 100,
+    robots: 50,
+    motors: 10
+  }
+},
 {
   id: "lab",
   name: "Laboratoire",
