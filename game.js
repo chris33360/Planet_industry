@@ -203,18 +203,6 @@ const machines = [
     cost: { aluminum: 5, glass: 20 },
     power: 0
   },
-
-  /* === TOUR SOLAIRE === */
-  {
-    id: "solar_tower",
-    name: "Tour solaire",
-    emoji: "🌞",
-    needs: "none",
-    produces: "energy",
-   produceRate: 3,
-    cost: { aluminum: 100, glass: 20, stone: 20 },
-    power: 0
-  },
    {
   id: "nuclearPlant",
   name: "Centrale nucléaire",
