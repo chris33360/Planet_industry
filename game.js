@@ -211,6 +211,7 @@ const machines = [
     emoji: "🌞",
     needs: "none",
     produces: "energy",
+   produceRate: 3,
     cost: { aluminum: 100, glass: 20, stone: 20 },
     power: 0
   },
