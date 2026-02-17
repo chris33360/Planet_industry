@@ -2,7 +2,7 @@
    RESSOURCES
 ============================ */
 let revealedCount = 1;
-let factoryBoost = 1; // 1 = normal, 1.1 = +10%
+let factoryBoost = 1;
 const revealCost = 2;
 const resources = {
    wood:      { name: "Bois", emoji: "🪵", amount: 100 },
@@ -585,7 +585,7 @@ function getMachineTooltip(machine) {
   Fonction pour calculer le coût dynamique
 ============================ */ 
 function getRevealCost() {
-  return Math.ceil(revealCost * Math.pow(1.1, revealedCount));
+  return Math.ceil(revealCost * Math.pow(1.03, revealedCount));
 }
 
 /* ============================
