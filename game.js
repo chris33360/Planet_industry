@@ -214,7 +214,7 @@ const machines = [
     cost: { aluminum: 100, glass: 20, stone: 20 },
     power: 0
   }
-}
+
 
 ];
 
