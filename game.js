@@ -213,39 +213,6 @@ const machines = [
     produces: "energy",
     cost: { aluminum: 100, glass: 20, stone: 20 },
     power: 0
-  },{
-  id: "nuclearPlant",
-  name: "Centrale nucléaire",
-  emoji: "☢️",
-  needs: "none",
-  produces: "energy",
-  produceRate: 0.6,
-  consumes: {uranium: 0.4},
-  cost: {
-    cable: 100,
-    glass: 100,
-    robots: 50,
-    motors: 10
-  }
-}
-,{
-  id: "lab",
-  name: "Laboratoire",
-  emoji: "🔬",
-   needs: "none",
-  produces: { science: 1 }, // 1 science / seconde
-  consumes: {
-    wood: 1,
-    iron: 1,
-    stone: 1,
-    copper: 1,
-    crystal: 1,
-    aluminum: 1,
-    energy: 3
-  },
-  cost: {
-    aluminum: 200,
-    circuits: 50
   }
 }
 
