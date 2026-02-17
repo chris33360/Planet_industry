@@ -324,9 +324,23 @@ function renderTechTree() {
     const card = document.createElement("div");
     card.className = "tech-card";
 
-    const title = document.createElement("div");
-    title.className = "tech-title";
-    title.textContent = t.name;
+    // Le bouton = le titre
+    const btn = document.createElement("button");
+    btn.className = "tech-title-button";
+    btn.textContent = t.name;
+
+    // Déjà débloqué
+    if (unlockedTechs.has(t.id)) {
+      btn.disabled = true;
+      btn.textContent = t.name + " ✔";
+    }
+
+    // Prérequis non débloqué
+    if (t.requires && !unlockedTechs.has(t.requires)) {
+      btn.disabled = true;
+    }
+
+    btn.onclick = () => unlockTech(t);
 
     const desc = document.createElement("div");
     desc.className = "tech-desc";
@@ -338,27 +352,13 @@ function renderTechTree() {
       .map(([r, v]) => `${v} ${resources[r].emoji}`)
       .join(", ");
 
-    const btn = document.createElement("button");
-    btn.textContent = "Débloquer";
-
-    if (unlockedTechs.has(t.id)) {
-      btn.disabled = true;
-      btn.textContent = "Débloqué ✔";
-    }
-
-    if (t.requires && !unlockedTechs.has(t.requires)) {
-      btn.disabled = true;
-    }
-
-    btn.onclick = () => unlockTech(t);
-
-    card.appendChild(title);
+    card.appendChild(btn);
     card.appendChild(desc);
     card.appendChild(cost);
-    card.appendChild(btn);
 
     div.appendChild(card);
 
+    // Flèche entre les cartes
     if (index < techs.length - 1) {
       const arrow = document.createElement("div");
       arrow.className = "tech-arrow";
@@ -367,6 +367,7 @@ function renderTechTree() {
     }
   });
 }
+
 
 
 function unlockTech(tech) {
