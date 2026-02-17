@@ -292,7 +292,7 @@ const techs = [
     desc: "Production + 30%",
     cost: { engine: 200 },
     requires: "boost20",
-    effect: () => { factoryBoost *= 1.20; }
+    effect: () => { factoryBoost *= 1.30; }
   },{
   id: "nuclearTech",
   name: "Technologie nucléaire",
@@ -983,22 +983,6 @@ function autoProductionTick() {
       }
       else if (machine.id === "coal_powerplant") {
         if (resources.coal.amount >= 1) energyProduced += 3;
-      }
-      else if (machine.id === "solar_tower") {
-        let bonus = 0;
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            const nx = x + dx;
-            const ny = y + dy;
-            if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight) {
-              if (grid[ny][nx].machine === "solar_panel") {
-                bonus += 3 * 0.6;
-              }
-            }
-          }
-        }
-        energyProduced += bonus;
       }
     }
   }
