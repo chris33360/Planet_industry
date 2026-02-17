@@ -43,6 +43,64 @@
     justify-content: space-between;
     margin: 4px 0;
   }
+/* Colonne verticale */
+.tech-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Carte technologique */
+.tech-card {
+  background: #1e293b;
+  border: 2px solid #334155;
+  padding: 12px;
+  border-radius: 8px;
+  position: relative;
+  text-align: center;
+  color: #e2e8f0;
+}
+
+/* Titre */
+.tech-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+/* Description */
+.tech-desc {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 10px;
+}
+
+/* Bouton */
+.tech-card button {
+  padding: 8px 12px;
+  background: #475569;
+  border: none;
+  border-radius: 6px;
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.tech-card button:hover {
+  background: #64748b;
+}
+
+.tech-card button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Flèche entre les cartes */
+.tech-arrow {
+  text-align: center;
+  font-size: 24px;
+  color: #94a3b8;
+}
 
   #machines button {
     background: #1e293b;
